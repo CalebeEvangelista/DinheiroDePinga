@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dinheiro de Pinga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#161616;
+  --surface:rgba(255,255,255,0.03);
+  --surface-2:rgba(255,255,255,0.05);
+  --border:rgba(255,255,255,0.08);
+  --gold:#facc15;
+  --gold-light:#fde047;
+  --green:#22c55e;
+  --green-light:#4ade80;
+  --red:#ef4444;
+  --text-primary:#f5f5f5;
+  --text-secondary:#a3a3a3;
+  --text-muted:#6b6b6b;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(circle at 15% 10%, rgba(250,204,21,0.06), transparent 40%),
+    radial-gradient(circle at 85% 90%, rgba(250,204,21,0.04), transparent 40%),
+    var(--bg);
+  color:var(--text-primary);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+}
+.display{font-family:'Inter',sans-serif;font-weight:700;}
+.hidden{display:none !important;}
+
+/* ---------- Login ---------- */
+#login-screen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.login-card{
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:40px 36px;
+  width:100%;
+  max-width:380px;
+  text-align:center;
+}
+.wordmark{
+  font-family:'Inter',sans-serif;
+  font-weight:800;
+  font-size:26px;
+  color:var(--gold);
+  letter-spacing:-0.3px;
+}
+.wordmark span{color:var(--text-primary);font-weight:800;}
+.tagline{color:var(--text-muted);font-size:13px;margin-top:6px;margin-bottom:28px;}
+.divider-ornament{
+  height:1px;
+  background:var(--border);
+  margin:20px 0;
+}
+input, select{
+  width:100%;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  color:var(--text-primary);
+  padding:11px 13px;
+  border-radius:8px;
+  font-size:14px;
+  font-family:'Inter',sans-serif;
+  margin-bottom:10px;
+}
+input:focus, select:focus{
+  outline:none;
+  border-color:var(--gold);
+  background:rgba(255,255,255,0.06);
+}
+button{
+  cursor:pointer;
+  font-family:'Inter',sans-serif;
+  font-weight:600;
+  border:none;
+  border-radius:8px;
+  font-size:14px;
+  transition:background .15s, border-color .15s, color .15s, transform .1s;
+}
+button:active{transform:scale(0.98);}
+.btn-primary{
+  width:100%;
+  background:var(--gold);
+  color:#161616;
+  padding:12px;
+  margin-top:6px;
+}
+.btn-primary:hover{background:var(--gold-light);}
+.error-msg{color:var(--red);font-size:13px;margin-top:10px;min-height:16px;}
+
+/* ---------- App shell ---------- */
+#app{min-height:100vh;}
+header{
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:16px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.header-left{display:flex;align-items:center;gap:14px;}
+.header-left .wordmark{font-size:19px;}
+.saldo-selo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(250,204,21,0.08);
+  border:1px solid rgba(250,204,21,0.3);
+  border-radius:10px;
+  padding:8px 16px;
+}
+.saldo-selo .ring{
+  width:30px;height:30px;
+  border-radius:8px;
+  background:rgba(250,204,21,0.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--gold);
+}
+.saldo-selo .info{line-height:1.2;}
+.saldo-selo .label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;}
+.saldo-selo .valor{font-family:'Inter',sans-serif;font-weight:700;font-size:16px;}
+.saldo-selo .valor.negativo{color:var(--red);}
+.saldo-selo .valor.positivo{color:var(--green-light);}
+.logout-btn{
+  background:transparent;
+  color:var(--text-muted);
+  border:1px solid var(--border);
+  padding:8px 14px;
+  border-radius:8px;
+}
+.logout-btn:hover{color:var(--text-primary);border-color:var(--text-muted);}
+
+nav{
+  display:flex;
+  gap:4px;
+  padding:0 24px;
+  background:rgba(255,255,255,0.02);
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;
+}
+nav button{
+  background:transparent;
+  color:var(--text-secondary);
+  padding:14px 16px;
+  border-bottom:2px solid transparent;
+  white-space:nowrap;
+  font-size:13.5px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+nav button i{font-size:12px;}
+nav button.active{color:var(--gold);border-bottom-color:var(--gold);}
+nav button:hover:not(.active){color:var(--text-primary);}
+
+main{padding:28px 24px;max-width:1100px;margin:0 auto;}
+.section-title{
+  font-family:'Inter',sans-serif;
+  font-size:21px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.section-sub{color:var(--text-muted);font-size:13px;margin-bottom:20px;}
+
+/* ---------- Cards / grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px;}
+.card{
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+}
+.card .label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.card .big{font-family:'Inter',sans-serif;font-weight:700;font-size:25px;}
+.card .sub{font-size:12px;color:var(--text-secondary);margin-top:6px;}
+.card.alerta{border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.05);}
+.card.alerta .big{color:var(--red);}
+.card.ok{border-color:rgba(34,197,94,0.3);}
+.card.ok .big{color:var(--green-light);}
+
+.panel{
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  margin-bottom:20px;
+}
+.panel h3{font-family:'Inter',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.panel h3 i{color:var(--gold);font-size:13px;}
+
+/* forms */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-row.three{grid-template-columns:1fr 1fr 1fr;}
+label{font-size:11.5px;color:var(--text-muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px;}
+.field{margin-bottom:10px;}
+.btn-add{background:var(--gold);color:#161616;padding:10px 20px;margin-top:6px;display:inline-flex;align-items:center;gap:8px;}
+.btn-add:hover{background:var(--gold-light);}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{text-align:left;color:var(--text-muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.4px;padding:8px 10px;border-bottom:1px solid var(--border);}
+td{padding:10px;border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.tag{
+  display:inline-block;
+  padding:2px 10px;
+  border-radius:6px;
+  font-size:11px;
+  background:rgba(255,255,255,0.05);
+  color:var(--text-secondary);
+  border:1px solid var(--border);
+}
+.tag.saida{color:var(--red);border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);}
+.tag.entrada{color:var(--green-light);border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.06);}
+.tag.aberto{color:var(--gold);border-color:rgba(250,204,21,0.3);background:rgba(250,204,21,0.06);}
+.tag.quitado{color:var(--text-muted);}
+.icon-btn{
+  background:transparent;
+  color:var(--text-muted);
+  padding:6px 10px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  font-size:12px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.icon-btn:hover{color:var(--red);border-color:rgba(239,68,68,0.4);}
+.icon-btn.quit{color:var(--green-light);}
+.icon-btn.quit:hover{border-color:rgba(34,197,94,0.4);}
+.empty{color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center;}
+
+/* mapa de gastos */
+.bar-row{margin-bottom:14px;}
+.bar-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
+.bar-head .cat{color:var(--text-primary);}
+.bar-head .val{color:var(--text-secondary);font-variant-numeric:tabular-nums;}
+.bar-track{height:7px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--gold);border-radius:99px;}
+
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:rgba(30,30,30,0.9);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--gold);
+  color:var(--text-primary);
+  padding:12px 18px;
+  border-radius:8px;
+  font-size:13.5px;
+  z-index:100;
+  transition:opacity .3s, transform .3s;
+}
+
+@media(max-width:640px){
+  .form-row, .form-row.three{grid-template-columns:1fr;}
+  header{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="wordmark">Dinheiro de <span>Pinga</span></div>
+    <div class="tagline">controle financeiro da conveniência</div>
+    <div class="divider-ornament"></div>
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="login-senha" placeholder="••••••••">
+    </div>
+    <button class="btn-primary" id="btn-login">Entrar</button>
+    <div class="error-msg" id="login-error"></div>
+    <div style="margin-top:16px;font-size:13px;color:var(--text-muted);">
+      <span id="toggle-mode-text">Ainda não tem conta?</span>
+      <a href="#" id="toggle-mode-link" style="color:var(--gold-light);text-decoration:none;font-weight:600;">Criar conta</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ONBOARDING (primeiro acesso) ============ -->
+<div id="onboarding-screen" class="hidden" style="position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;">
+  <div class="login-card">
+    <div class="wordmark">Bem-vindo!</div>
+    <div class="tagline">só mais um passo antes de começar</div>
+    <div class="divider-ornament"></div>
+    <div class="field"><label>Seu nome</label><input type="text" id="onb-nome" placeholder="ex: Calebe"></div>
+    <div class="field"><label>Nome do negócio</label><input type="text" id="onb-negocio" placeholder="ex: Conveniência do Calebe"></div>
+    <div class="field"><label>Dias de operação por semana</label><input type="number" min="1" max="7" id="onb-dias" value="6"></div>
+    <button class="btn-primary" id="btn-onboarding">Começar a usar</button>
+    <div class="error-msg" id="onboarding-error"></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <header>
+    <div class="header-left">
+      <span class="wordmark">Dinheiro de <span>Pinga</span></span>
+      <span style="color:var(--text-muted);font-size:13px;" id="header-negocio-nome"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="saldo-selo">
+        <div class="ring"><i class="fa-solid fa-sack-dollar"></i></div>
+        <div class="info">
+          <div class="label">Saldo atual</div>
+          <div class="valor" id="saldo-atual-header">R$ 0,00</div>
+        </div>
+      </div>
+      <button class="logout-btn" id="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
+    </div>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" data-tab="dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</button>
+    <button class="nav-btn" data-tab="depositos"><i class="fa-solid fa-piggy-bank"></i> Depósitos</button>
+    <button class="nav-btn" data-tab="fixas"><i class="fa-solid fa-file-invoice-dollar"></i> Despesas fixas</button>
+    <button class="nav-btn" data-tab="despesas"><i class="fa-solid fa-receipt"></i> Despesas</button>
+    <button class="nav-btn" data-tab="emprestimos"><i class="fa-solid fa-hand-holding-dollar"></i> Empréstimos</button>
+    <button class="nav-btn" data-tab="config"><i class="fa-solid fa-gear"></i> Configurações</button>
+  </nav>
+
+  <main>
+
+    <!-- ===== DASHBOARD ===== -->
+    <section id="tab-dashboard" class="tab-content">
+      <div class="section-title">Saúde financeira</div>
+      <div class="section-sub">Visão geral do dinheiro que entra e sai</div>
+
+      <div class="grid">
+        <div class="card" id="card-saldo">
+          <div class="label">Saldo atual</div>
+          <div class="big" id="dash-saldo">R$ 0,00</div>
+          <div class="sub">depósitos − despesas − empréstimos em aberto</div>
+        </div>
+        <div class="card">
+          <div class="label">Necessário por dia</div>
+          <div class="big" id="dash-dia">R$ 0,00</div>
+          <div class="sub">de lucro para cobrir as fixas</div>
+        </div>
+        <div class="card">
+          <div class="label">Necessário por semana</div>
+          <div class="big" id="dash-semana">R$ 0,00</div>
+          <div class="sub" id="dash-semana-sub">baseado nos dias de operação</div>
+        </div>
+        <div class="card">
+          <div class="label">Fixas do mês</div>
+          <div class="big" id="dash-fixas-total">R$ 0,00</div>
+          <div class="sub" id="dash-fixas-count">0 contas ativas</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-chart-simple"></i> Mapa de gastos</h3>
+        <div id="mapa-gastos"></div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr 1fr;">
+        <div class="panel">
+          <h3><i class="fa-solid fa-hand-holding-dollar"></i> Empréstimos em aberto</h3>
+          <div id="dash-emprestimos-abertos"></div>
+        </div>
+        <div class="panel">
+          <h3><i class="fa-solid fa-clock-rotate-left"></i> Últimos lançamentos</h3>
+          <div id="dash-ultimos"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== DEPOSITOS ===== -->
+    <section id="tab-depositos" class="tab-content hidden">
+      <div class="section-title">Depósitos</div>
+      <div class="section-sub">Lucro bruto que você transferiu do PDV pra cá</div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-plus"></i> Novo depósito</h3>
+        <div class="form-row three">
+          <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="dep-valor"></div>
+          <div class="field"><label>Data</label><input type="date" id="dep-data"></div>
+          <div class="field"><label>Descrição</label><input type="text" id="dep-desc" placeholder="ex: lucro do dia 14/07"></div>
+        </div>
+        <button class="btn-add" id="btn-add-deposito"><i class="fa-solid fa-plus"></i> Registrar depósito</button>
+      </div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-list"></i> Histórico</h3>
+        <table>
+          <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th></th></tr></thead>
+          <tbody id="tbl-depositos"></tbody>
+        </table>
+        <div class="empty hidden" id="empty-depositos">Nenhum depósito registrado ainda</div>
+      </div>
+    </section>
+
+    <!-- ===== DESPESAS FIXAS ===== -->
+    <section id="tab-fixas" class="tab-content hidden">
+      <div class="section-title">Despesas fixas</div>
+      <div class="section-sub">Contas recorrentes que definem quanto você precisa faturar</div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-plus"></i> Nova despesa fixa</h3>
+        <div class="form-row three">
+          <div class="field"><label>Nome</label><input type="text" id="fixa-nome" placeholder="ex: aluguel"></div>
+          <div class="field"><label>Valor mensal (R$)</label><input type="number" step="0.01" id="fixa-valor"></div>
+          <div class="field"><label>Dia de vencimento</label><input type="number" min="1" max="31" id="fixa-dia"></div>
+        </div>
+        <div class="field">
+          <label>Categoria</label>
+          <select id="fixa-categoria">
+            <option value="aluguel">Aluguel</option>
+            <option value="funcionarios">Funcionários</option>
+            <option value="contas">Contas (água, luz, internet)</option>
+            <option value="fornecedores">Fornecedores</option>
+            <option value="outros">Outros</option>
+          </select>
+        </div>
+        <button class="btn-add" id="btn-add-fixa"><i class="fa-solid fa-plus"></i> Cadastrar despesa fixa</button>
+      </div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-list"></i> Contas cadastradas</h3>
+        <table>
+          <thead><tr><th>Nome</th><th>Categoria</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+          <tbody id="tbl-fixas"></tbody>
+        </table>
+        <div class="empty hidden" id="empty-fixas">Nenhuma despesa fixa cadastrada</div>
+      </div>
+    </section>
+
+    <!-- ===== DESPESAS VARIAVEIS ===== -->
+    <section id="tab-despesas" class="tab-content hidden">
+      <div class="section-title">Despesas</div>
+      <div class="section-sub">Gastos do dia a dia — gasolina, pessoal, funcionários e mais</div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-plus"></i> Nova despesa</h3>
+        <div class="form-row three">
+          <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="desp-valor"></div>
+          <div class="field"><label>Data</label><input type="date" id="desp-data"></div>
+          <div class="field">
+            <label>Categoria</label>
+            <select id="desp-categoria">
+              <option value="gasolina">Gasolina</option>
+              <option value="pessoal">Pessoal</option>
+              <option value="funcionarios">Funcionários</option>
+              <option value="contas">Contas</option>
+              <option value="fornecedores">Fornecedores</option>
+              <option value="outros">Outros</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Descrição</label><input type="text" id="desp-desc" placeholder="ex: gasolina do carro da loja"></div>
+        <button class="btn-add" id="btn-add-despesa"><i class="fa-solid fa-plus"></i> Registrar despesa</button>
+      </div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-list"></i> Histórico</h3>
+        <table>
+          <thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th></th></tr></thead>
+          <tbody id="tbl-despesas"></tbody>
+        </table>
+        <div class="empty hidden" id="empty-despesas">Nenhuma despesa registrada ainda</div>
+      </div>
+    </section>
+
+    <!-- ===== EMPRESTIMOS ===== -->
+    <section id="tab-emprestimos" class="tab-content hidden">
+      <div class="section-title">Empréstimos</div>
+      <div class="section-sub">Dinheiro tirado do lucro emprestado, até devolver</div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-plus"></i> Novo empréstimo</h3>
+        <div class="form-row three">
+          <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="emp-valor"></div>
+          <div class="field"><label>Data</label><input type="date" id="emp-data"></div>
+          <div class="field"><label>Motivo</label><input type="text" id="emp-motivo" placeholder="ex: comprar peça da moto"></div>
+        </div>
+        <button class="btn-add" id="btn-add-emprestimo"><i class="fa-solid fa-plus"></i> Registrar empréstimo</button>
+      </div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-list"></i> Todos os empréstimos</h3>
+        <table>
+          <thead><tr><th>Data</th><th>Motivo</th><th>Valor</th><th>Devolvido</th><th>Status</th><th></th></tr></thead>
+          <tbody id="tbl-emprestimos"></tbody>
+        </table>
+        <div class="empty hidden" id="empty-emprestimos">Nenhum empréstimo registrado</div>
+      </div>
+    </section>
+
+    <!-- ===== CONFIG ===== -->
+    <section id="tab-config" class="tab-content hidden">
+      <div class="section-title">Configurações</div>
+      <div class="section-sub">Ajustes usados nos cálculos do dashboard</div>
+
+      <div class="panel" style="max-width:400px;">
+        <h3><i class="fa-solid fa-gear"></i> Dias de operação por semana</h3>
+        <div class="field">
+          <label>Quantos dias a loja abre por semana</label>
+          <input type="number" min="1" max="7" id="cfg-dias" value="6">
+        </div>
+        <button class="btn-add" id="btn-save-config"><i class="fa-solid fa-check"></i> Salvar</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc,
+  query, orderBy, serverTimestamp, arrayUnion, setDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+// ============ CONFIGURAÇÃO DO FIREBASE ============
+// Troque pelos dados do SEU projeto (crie um novo, separado do PDV)
+const firebaseConfig = {
+  apiKey: "AIzaSyB3lo9G9vHV1qT4093Fg_GNfvyJzQHMZ_4",
+  authDomain: "dinheirodepinga-71832.firebaseapp.com",
+  projectId: "dinheirodepinga-71832",
+  storageBucket: "dinheirodepinga-71832.firebasestorage.app",
+  messagingSenderId: "461049580407",
+  appId: "1:461049580407:web:f21303f35ab01a0cefef72"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const CATS = {
+  gasolina:"Gasolina", pessoal:"Pessoal", funcionarios:"Funcionários",
+  contas:"Contas", fornecedores:"Fornecedores", outros:"Outros", aluguel:"Aluguel"
+};
+
+let state = { depositos:[], despesas:[], fixas:[], emprestimos:[], config:{diasAbertosPorSemana:6}, perfil:null };
+let currentUser = null;
+let modoCadastro = false;
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  setTimeout(()=>t.classList.add('hidden'), 2800);
+}
+function fmtMoney(v){
+  return (v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+function fmtDate(d){
+  if(!d) return '-';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('pt-BR');
+}
+function todayStr(){
+  return new Date().toISOString().slice(0,10);
+}
+
+// ============ AUTH ============
+function traduzErro(code){
+  const mapa = {
+    'auth/email-already-in-use':'Esse e-mail já tem conta cadastrada',
+    'auth/weak-password':'A senha precisa ter pelo menos 6 caracteres',
+    'auth/invalid-email':'E-mail inválido',
+    'auth/invalid-credential':'E-mail ou senha inválidos',
+    'auth/wrong-password':'E-mail ou senha inválidos',
+    'auth/user-not-found':'E-mail ou senha inválidos',
+    'auth/too-many-requests':'Muitas tentativas, aguarde um pouco',
+  };
+  return mapa[code] || 'Não deu pra continuar, tenta de novo';
+}
+
+document.getElementById('toggle-mode-link').addEventListener('click', (e)=>{
+  e.preventDefault();
+  modoCadastro = !modoCadastro;
+  document.getElementById('btn-login').textContent = modoCadastro ? 'Criar conta' : 'Entrar';
+  document.getElementById('toggle-mode-text').textContent = modoCadastro ? 'Já tem conta?' : 'Ainda não tem conta?';
+  document.getElementById('toggle-mode-link').textContent = modoCadastro ? 'Entrar' : 'Criar conta';
+  document.getElementById('login-error').textContent = '';
+});
+
+document.getElementById('btn-login').addEventListener('click', async ()=>{
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  try{
+    if(modoCadastro){
+      await createUserWithEmailAndPassword(auth, email, senha);
+    }else{
+      await signInWithEmailAndPassword(auth, email, senha);
+    }
+  }catch(e){
+    errEl.textContent = traduzErro(e.code);
+  }
+});
+document.getElementById('btn-logout').addEventListener('click', ()=> signOut(auth));
+
+document.getElementById('btn-onboarding').addEventListener('click', async ()=>{
+  const nome = document.getElementById('onb-nome').value.trim();
+  const nomeNegocio = document.getElementById('onb-negocio').value.trim();
+  const diasAbertosPorSemana = parseInt(document.getElementById('onb-dias').value) || 6;
+  const errEl = document.getElementById('onboarding-error');
+  if(!nome || !nomeNegocio){ errEl.textContent = 'Preencha seu nome e o nome do negócio'; return; }
+  const perfil = {nome, nomeNegocio, diasAbertosPorSemana, criadoEm: serverTimestamp()};
+  await setDoc(doc(db,'usuarios', currentUser.uid), perfil);
+  state.perfil = perfil;
+  state.config.diasAbertosPorSemana = diasAbertosPorSemana;
+  abrirApp();
+  toast('Bem-vindo(a), ' + nome + '!');
+});
+
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
+    currentUser = user;
+    document.getElementById('login-screen').classList.add('hidden');
+    const perfilSnap = await getDoc(doc(db,'usuarios', user.uid));
+    if(perfilSnap.exists()){
+      state.perfil = perfilSnap.data();
+      state.config.diasAbertosPorSemana = state.perfil.diasAbertosPorSemana || 6;
+      abrirApp();
+    }else{
+      document.getElementById('onboarding-screen').classList.remove('hidden');
+    }
+  }else{
+    currentUser = null;
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('onboarding-screen').classList.add('hidden');
+    document.getElementById('login-screen').classList.remove('hidden');
+  }
+});
+
+function abrirApp(){
+  document.getElementById('onboarding-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('header-negocio-nome').textContent = state.perfil.nomeNegocio ? ('· ' + state.perfil.nomeNegocio) : '';
+  startListeners();
+}
+
+// ============ NAV ============
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.remove('hidden');
+  });
+});
+
+// ============ LISTENERS FIRESTORE ============
+function startListeners(){
+  const uid = currentUser.uid;
+  onSnapshot(query(collection(db,'usuarios',uid,'depositos'), orderBy('data','desc')), snap=>{
+    state.depositos = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderAll();
+  });
+  onSnapshot(query(collection(db,'usuarios',uid,'despesas'), orderBy('data','desc')), snap=>{
+    state.despesas = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderAll();
+  });
+  onSnapshot(collection(db,'usuarios',uid,'despesasFixas'), snap=>{
+    state.fixas = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderAll();
+  });
+  onSnapshot(query(collection(db,'usuarios',uid,'emprestimos'), orderBy('data','desc')), snap=>{
+    state.emprestimos = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderAll();
+  });
+  document.getElementById('cfg-dias').value = state.config.diasAbertosPorSemana || 6;
+  ['dep-data','desp-data','emp-data'].forEach(id=>{
+    document.getElementById(id).value = todayStr();
+  });
+}
+
+// ============ DEPOSITOS ============
+document.getElementById('btn-add-deposito').addEventListener('click', async ()=>{
+  const valor = parseFloat(document.getElementById('dep-valor').value);
+  const data = document.getElementById('dep-data').value;
+  const descricao = document.getElementById('dep-desc').value.trim();
+  if(!valor || valor<=0 || !data){ toast('Preencha valor e data'); return; }
+  await addDoc(collection(db,'usuarios',currentUser.uid,'depositos'), {valor, data, descricao, criadoEm: serverTimestamp()});
+  document.getElementById('dep-valor').value='';
+  document.getElementById('dep-desc').value='';
+  toast('Depósito registrado');
+});
+
+async function excluirDeposito(id){
+  if(!confirm('Excluir este depósito?')) return;
+  await deleteDoc(doc(db,'usuarios',currentUser.uid,'depositos', id));
+}
+
+// ============ DESPESAS FIXAS ============
+document.getElementById('btn-add-fixa').addEventListener('click', async ()=>{
+  const nome = document.getElementById('fixa-nome').value.trim();
+  const valor = parseFloat(document.getElementById('fixa-valor').value);
+  const diaVencimento = parseInt(document.getElementById('fixa-dia').value) || null;
+  const categoria = document.getElementById('fixa-categoria').value;
+  if(!nome || !valor || valor<=0){ toast('Preencha nome e valor'); return; }
+  await addDoc(collection(db,'usuarios',currentUser.uid,'despesasFixas'), {nome, valor, diaVencimento, categoria, ativa:true});
+  document.getElementById('fixa-nome').value='';
+  document.getElementById('fixa-valor').value='';
+  document.getElementById('fixa-dia').value='';
+  toast('Despesa fixa cadastrada');
+});
+
+async function toggleFixa(id, ativa){
+  await updateDoc(doc(db,'usuarios',currentUser.uid,'despesasFixas', id), {ativa: !ativa});
+}
+async function excluirFixa(id){
+  if(!confirm('Excluir esta despesa fixa?')) return;
+  await deleteDoc(doc(db,'usuarios',currentUser.uid,'despesasFixas', id));
+}
+
+// ============ DESPESAS VARIAVEIS ============
+document.getElementById('btn-add-despesa').addEventListener('click', async ()=>{
+  const valor = parseFloat(document.getElementById('desp-valor').value);
+  const data = document.getElementById('desp-data').value;
+  const categoria = document.getElementById('desp-categoria').value;
+  const descricao = document.getElementById('desp-desc').value.trim();
+  if(!valor || valor<=0 || !data){ toast('Preencha valor e data'); return; }
+  await addDoc(collection(db,'usuarios',currentUser.uid,'despesas'), {valor, data, categoria, descricao, criadoEm: serverTimestamp()});
+  document.getElementById('desp-valor').value='';
+  document.getElementById('desp-desc').value='';
+  toast('Despesa registrada');
+});
+
+async function excluirDespesa(id){
+  if(!confirm('Excluir esta despesa?')) return;
+  await deleteDoc(doc(db,'usuarios',currentUser.uid,'despesas', id));
+}
+
+// ============ EMPRESTIMOS ============
+document.getElementById('btn-add-emprestimo').addEventListener('click', async ()=>{
+  const valor = parseFloat(document.getElementById('emp-valor').value);
+  const data = document.getElementById('emp-data').value;
+  const motivo = document.getElementById('emp-motivo').value.trim();
+  if(!valor || valor<=0 || !data){ toast('Preencha valor e data'); return; }
+  await addDoc(collection(db,'usuarios',currentUser.uid,'emprestimos'), {valor, data, motivo, status:'aberto', devolucoes:[]});
+  document.getElementById('emp-valor').value='';
+  document.getElementById('emp-motivo').value='';
+  toast('Empréstimo registrado');
+});
+
+async function registrarDevolucao(id, valorTotal, jaDevolvido){
+  const restante = valorTotal - jaDevolvido;
+  const valorStr = prompt('Valor devolvido agora (restante: '+fmtMoney(restante)+')', restante.toFixed(2));
+  if(!valorStr) return;
+  const valor = parseFloat(valorStr.replace(',','.'));
+  if(!valor || valor<=0) return;
+  const novoTotal = jaDevolvido + valor;
+  const status = novoTotal >= valorTotal ? 'quitado' : 'aberto';
+  await updateDoc(doc(db,'usuarios',currentUser.uid,'emprestimos', id), {
+    devolucoes: arrayUnion({valor, data: todayStr()}),
+    status
+  });
+  toast(status==='quitado' ? 'Empréstimo quitado!' : 'Devolução registrada');
+}
+async function excluirEmprestimo(id){
+  if(!confirm('Excluir este empréstimo?')) return;
+  await deleteDoc(doc(db,'usuarios',currentUser.uid,'emprestimos', id));
+}
+
+// ============ CONFIG ============
+document.getElementById('btn-save-config').addEventListener('click', async ()=>{
+  const dias = parseInt(document.getElementById('cfg-dias').value) || 6;
+  await updateDoc(doc(db,'usuarios',currentUser.uid), {diasAbertosPorSemana: dias});
+  state.config.diasAbertosPorSemana = dias;
+  toast('Configuração salva');
+  renderAll();
+});
+
+// expõe funções pros botões inline
+window.excluirDeposito = excluirDeposito;
+window.toggleFixa = toggleFixa;
+window.excluirFixa = excluirFixa;
+window.excluirDespesa = excluirDespesa;
+window.registrarDevolucao = registrarDevolucao;
+window.excluirEmprestimo = excluirEmprestimo;
+
+// ============ CÁLCULOS ============
+function calcular(){
+  const totalDepositos = state.depositos.reduce((s,d)=>s+d.valor,0);
+  const totalDespesas = state.despesas.reduce((s,d)=>s+d.valor,0);
+  const totalEmprestado = state.emprestimos.reduce((s,e)=>s+e.valor,0);
+  const totalDevolvido = state.emprestimos.reduce((s,e)=>s + (e.devolucoes||[]).reduce((a,d)=>a+d.valor,0), 0);
+  const saldoAtual = totalDepositos - totalDespesas - totalEmprestado + totalDevolvido;
+
+  const fixasAtivas = state.fixas.filter(f=>f.ativa);
+  const necessidadeMensal = fixasAtivas.reduce((s,f)=>s+f.valor,0);
+  const diasAbertos = state.config.diasAbertosPorSemana || 6;
+  const necessidadeSemanal = necessidadeMensal / 4.33;
+  const necessidadeDiaria = necessidadeSemanal / diasAbertos;
+
+  return {totalDepositos, totalDespesas, totalEmprestado, totalDevolvido, saldoAtual,
+          necessidadeMensal, necessidadeSemanal, necessidadeDiaria, fixasAtivas, diasAbertos};
+}
+
+// ============ RENDER ============
+function renderAll(){
+  const c = calcular();
+
+  const saldoHeaderEl = document.getElementById('saldo-atual-header');
+  saldoHeaderEl.textContent = fmtMoney(c.saldoAtual);
+  saldoHeaderEl.className = 'valor ' + (c.saldoAtual < 0 ? 'negativo' : 'positivo');
+
+  document.getElementById('dash-saldo').textContent = fmtMoney(c.saldoAtual);
+  document.getElementById('card-saldo').className = 'card ' + (c.saldoAtual < 0 ? 'alerta' : 'ok');
+
+  document.getElementById('dash-dia').textContent = fmtMoney(c.necessidadeDiaria);
+  document.getElementById('dash-semana').textContent = fmtMoney(c.necessidadeSemanal);
+  document.getElementById('dash-semana-sub').textContent = `em ${c.diasAbertos} dias de operação`;
+  document.getElementById('dash-fixas-total').textContent = fmtMoney(c.necessidadeMensal);
+  document.getElementById('dash-fixas-count').textContent = `${c.fixasAtivas.length} conta(s) ativa(s)`;
+
+  renderMapaGastos();
+  renderDepositos();
+  renderFixas();
+  renderDespesas();
+  renderEmprestimos();
+  renderDashExtras();
+}
+
+function renderMapaGastos(){
+  const el = document.getElementById('mapa-gastos');
+  const porCategoria = {};
+  state.despesas.forEach(d=>{
+    porCategoria[d.categoria] = (porCategoria[d.categoria]||0) + d.valor;
+  });
+  const total = Object.values(porCategoria).reduce((a,b)=>a+b,0);
+  const entradas = Object.entries(porCategoria).sort((a,b)=>b[1]-a[1]);
+
+  if(entradas.length === 0){
+    el.innerHTML = '<div class="empty">Nenhuma despesa registrada ainda pra montar o mapa</div>';
+    return;
+  }
+  el.innerHTML = entradas.map(([cat,val])=>{
+    const pct = total>0 ? (val/total*100) : 0;
+    return `<div class="bar-row">
+      <div class="bar-head"><span class="cat">${CATS[cat]||cat}</span><span class="val">${fmtMoney(val)} · ${pct.toFixed(0)}%</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderDashExtras(){
+  const abertosEl = document.getElementById('dash-emprestimos-abertos');
+  const abertos = state.emprestimos.filter(e=>e.status==='aberto');
+  if(abertos.length===0){
+    abertosEl.innerHTML = '<div class="empty">Nenhum empréstimo em aberto</div>';
+  }else{
+    abertosEl.innerHTML = abertos.map(e=>{
+      const dev = (e.devolucoes||[]).reduce((a,d)=>a+d.valor,0);
+      return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;">
+        <span>${e.motivo||'sem motivo'}</span>
+        <span style="color:var(--gold-light)">${fmtMoney(e.valor-dev)} restante</span>
+      </div>`;
+    }).join('');
+  }
+
+  const ultimosEl = document.getElementById('dash-ultimos');
+  const todos = [
+    ...state.depositos.map(d=>({tipo:'entrada', label:'Depósito', ...d})),
+    ...state.despesas.map(d=>({tipo:'saida', label:CATS[d.categoria]||d.categoria, ...d})),
+  ].sort((a,b)=> (b.data||'').localeCompare(a.data||'')).slice(0,6);
+
+  if(todos.length===0){
+    ultimosEl.innerHTML = '<div class="empty">Sem lançamentos ainda</div>';
+  }else{
+    ultimosEl.innerHTML = todos.map(t=>`
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;">
+        <span>${t.label} <span style="color:var(--text-muted)">· ${fmtDate(t.data)}</span></span>
+        <span class="tag ${t.tipo}">${t.tipo==='entrada'?'+':'-'} ${fmtMoney(t.valor)}</span>
+      </div>`).join('');
+  }
+}
+
+function renderDepositos(){
+  const tbl = document.getElementById('tbl-depositos');
+  document.getElementById('empty-depositos').classList.toggle('hidden', state.depositos.length>0);
+  tbl.innerHTML = state.depositos.map(d=>`
+    <tr>
+      <td>${fmtDate(d.data)}</td>
+      <td>${d.descricao||'-'}</td>
+      <td style="color:var(--green-light)">${fmtMoney(d.valor)}</td>
+      <td><button class="icon-btn" onclick="excluirDeposito('${d.id}')"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`).join('');
+}
+
+function renderFixas(){
+  const tbl = document.getElementById('tbl-fixas');
+  document.getElementById('empty-fixas').classList.toggle('hidden', state.fixas.length>0);
+  tbl.innerHTML = state.fixas.map(f=>`
+    <tr>
+      <td>${f.nome}</td>
+      <td><span class="tag">${CATS[f.categoria]||f.categoria}</span></td>
+      <td>dia ${f.diaVencimento||'-'}</td>
+      <td>${fmtMoney(f.valor)}</td>
+      <td><span class="tag ${f.ativa?'entrada':'saida'}">${f.ativa?'ativa':'inativa'}</span></td>
+      <td>
+        <button class="icon-btn quit" onclick="toggleFixa('${f.id}', ${f.ativa})"><i class="fa-solid ${f.ativa?'fa-pause':'fa-play'}"></i> ${f.ativa?'desativar':'ativar'}</button>
+        <button class="icon-btn" onclick="excluirFixa('${f.id}')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+
+function renderDespesas(){
+  const tbl = document.getElementById('tbl-despesas');
+  document.getElementById('empty-despesas').classList.toggle('hidden', state.despesas.length>0);
+  tbl.innerHTML = state.despesas.map(d=>`
+    <tr>
+      <td>${fmtDate(d.data)}</td>
+      <td><span class="tag">${CATS[d.categoria]||d.categoria}</span></td>
+      <td>${d.descricao||'-'}</td>
+      <td style="color:var(--red)">${fmtMoney(d.valor)}</td>
+      <td><button class="icon-btn" onclick="excluirDespesa('${d.id}')"><i class="fa-solid fa-trash"></i></button></td>
+    </tr>`).join('');
+}
+
+function renderEmprestimos(){
+  const tbl = document.getElementById('tbl-emprestimos');
+  document.getElementById('empty-emprestimos').classList.toggle('hidden', state.emprestimos.length>0);
+  tbl.innerHTML = state.emprestimos.map(e=>{
+    const dev = (e.devolucoes||[]).reduce((a,d)=>a+d.valor,0);
+    return `<tr>
+      <td>${fmtDate(e.data)}</td>
+      <td>${e.motivo||'-'}</td>
+      <td>${fmtMoney(e.valor)}</td>
+      <td>${fmtMoney(dev)}</td>
+      <td><span class="tag ${e.status}">${e.status}</span></td>
+      <td>
+        ${e.status==='aberto' ? `<button class="icon-btn quit" onclick="registrarDevolucao('${e.id}', ${e.valor}, ${dev})"><i class="fa-solid fa-rotate-left"></i> devolver</button>` : ''}
+        <button class="icon-btn" onclick="excluirEmprestimo('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
