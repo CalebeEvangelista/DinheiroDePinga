@@ -380,6 +380,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="valor" id="saldo-atual-header">R$ 0,00</div>
         </div>
       </div>
+      <button class="logout-btn" id="btn-toggle-valores" title="Ocultar valores"><i class="fa-solid fa-eye" id="icon-toggle-valores"></i></button>
       <button class="logout-btn" id="btn-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
     </div>
   </header>
@@ -640,7 +641,10 @@ function toast(msg){
   t.classList.remove('hidden');
   setTimeout(()=>t.classList.add('hidden'), 2800);
 }
+let ocultarValores = localStorage.getItem('dp-ocultar-valores') === '1';
+
 function fmtMoney(v){
+  if(ocultarValores) return 'R$ ••••••';
   return (v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
 }
 function fmtDate(d){
@@ -692,6 +696,15 @@ document.getElementById('btn-login').addEventListener('click', async ()=>{
 });
 document.getElementById('btn-logout').addEventListener('click', ()=> signOut(auth));
 
+document.getElementById('btn-toggle-valores').addEventListener('click', ()=>{
+  ocultarValores = !ocultarValores;
+  localStorage.setItem('dp-ocultar-valores', ocultarValores ? '1' : '0');
+  const icon = document.getElementById('icon-toggle-valores');
+  icon.className = ocultarValores ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+  document.getElementById('btn-toggle-valores').title = ocultarValores ? 'Mostrar valores' : 'Ocultar valores';
+  if(currentUser) renderAll();
+});
+
 document.getElementById('btn-onboarding').addEventListener('click', async ()=>{
   const nome = document.getElementById('onb-nome').value.trim();
   const nomeNegocio = document.getElementById('onb-negocio').value.trim();
@@ -730,6 +743,8 @@ function abrirApp(){
   document.getElementById('onboarding-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('header-negocio-nome').textContent = state.perfil.nomeNegocio ? ('· ' + state.perfil.nomeNegocio) : '';
+  document.getElementById('icon-toggle-valores').className = ocultarValores ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+  document.getElementById('btn-toggle-valores').title = ocultarValores ? 'Mostrar valores' : 'Ocultar valores';
   startListeners();
 }
 
