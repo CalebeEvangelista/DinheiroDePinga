@@ -203,6 +203,42 @@ main{padding:28px 24px;max-width:1100px;margin:0 auto;}
 .card.alerta .big{color:var(--red);}
 .card.ok{border-color:rgba(34,197,94,0.3);}
 .card.ok .big{color:var(--green-light);}
+.card.warn{border-color:rgba(250,204,21,0.35);background:rgba(250,204,21,0.05);}
+.card.warn .big{color:var(--gold);}
+
+.meta-linha{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid var(--border);
+  font-size:12px;
+}
+.meta-linha .meta-label{color:var(--text-muted);}
+.meta-pill{
+  padding:2px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:600;
+}
+.meta-pill.falta{background:rgba(239,68,68,0.1);color:var(--red);}
+.meta-pill.bateu{background:rgba(34,197,94,0.1);color:var(--green-light);}
+
+.compare-row{margin-bottom:16px;}
+.compare-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
+.compare-head .cat{color:var(--text-primary);}
+.compare-head .delta{font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;}
+.compare-head .delta.up{background:rgba(239,68,68,0.1);color:var(--red);}
+.compare-head .delta.down{background:rgba(34,197,94,0.1);color:var(--green-light);}
+.compare-head .delta.zero{background:rgba(255,255,255,0.05);color:var(--text-muted);}
+.compare-bars{display:flex;flex-direction:column;gap:4px;}
+.compare-bar-line{display:flex;align-items:center;gap:8px;}
+.compare-bar-line .bar-label{font-size:10.5px;color:var(--text-muted);width:70px;flex-shrink:0;}
+.compare-bar-line .bar-track{flex:1;height:7px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;}
+.compare-bar-line .bar-fill.atual{background:var(--gold);}
+.compare-bar-line .bar-fill.anterior{background:var(--text-muted);}
+.compare-bar-line .bar-val{font-size:11px;color:var(--text-secondary);width:70px;text-align:right;flex-shrink:0;}
 
 .panel{
   background:rgba(255,255,255,0.03);
@@ -243,6 +279,9 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .tag.entrada{color:var(--green-light);border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.06);}
 .tag.aberto{color:var(--gold);border-color:rgba(250,204,21,0.3);background:rgba(250,204,21,0.06);}
 .tag.quitado{color:var(--text-muted);}
+.tag.pendente{color:var(--gold);border-color:rgba(250,204,21,0.3);background:rgba(250,204,21,0.06);}
+.tag.atrasado{color:var(--red);border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);}
+.tag.pago{color:var(--text-muted);}
 .icon-btn{
   background:transparent;
   color:var(--text-muted);
@@ -371,22 +410,41 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <div class="label">Necessário por dia</div>
           <div class="big" id="dash-dia">R$ 0,00</div>
           <div class="sub">de lucro para cobrir as fixas</div>
+          <div class="meta-linha">
+            <span class="meta-label">Depositado hoje</span>
+            <span class="meta-pill" id="meta-dia-pill">R$ 0,00</span>
+          </div>
         </div>
         <div class="card">
           <div class="label">Necessário por semana</div>
           <div class="big" id="dash-semana">R$ 0,00</div>
           <div class="sub" id="dash-semana-sub">baseado nos dias de operação</div>
+          <div class="meta-linha">
+            <span class="meta-label">Depositado na semana</span>
+            <span class="meta-pill" id="meta-semana-pill">R$ 0,00</span>
+          </div>
         </div>
-        <div class="card">
-          <div class="label">Fixas do mês</div>
-          <div class="big" id="dash-fixas-total">R$ 0,00</div>
-          <div class="sub" id="dash-fixas-count">0 contas ativas</div>
+        <div class="card" id="card-contas-vencer">
+          <div class="label">Fixas vencendo (7 dias)</div>
+          <div class="big" id="dash-contas-vencer">R$ 0,00</div>
+          <div class="sub" id="dash-contas-vencer-count">0 conta(s)</div>
         </div>
+      </div>
+
+      <div class="panel" id="panel-fixas-vencendo" style="display:none;">
+        <h3><i class="fa-solid fa-bell"></i> Vencendo em breve</h3>
+        <div id="fixas-vencendo-lista"></div>
       </div>
 
       <div class="panel">
         <h3><i class="fa-solid fa-chart-simple"></i> Mapa de gastos</h3>
         <div id="mapa-gastos"></div>
+      </div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-arrow-right-arrow-left"></i> Comparativo mensal</h3>
+        <div class="section-sub" style="margin-bottom:14px;">Gastos deste mês comparados ao mês anterior, por categoria</div>
+        <div id="comparativo-mensal"></div>
       </div>
 
       <div class="grid" style="grid-template-columns:1fr 1fr;">
@@ -429,7 +487,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <!-- ===== DESPESAS FIXAS ===== -->
     <section id="tab-fixas" class="tab-content hidden">
       <div class="section-title">Despesas fixas</div>
-      <div class="section-sub">Contas recorrentes que definem quanto você precisa faturar</div>
+      <div class="section-sub" id="fixas-resumo">Contas recorrentes que definem quanto você precisa faturar</div>
 
       <div class="panel">
         <h3><i class="fa-solid fa-plus"></i> Nova despesa fixa</h3>
@@ -816,6 +874,27 @@ window.registrarDevolucao = registrarDevolucao;
 window.excluirEmprestimo = excluirEmprestimo;
 
 // ============ CÁLCULOS ============
+function proximoVencimento(diaVencimento){
+  if(!diaVencimento) return null;
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  let candidato = new Date(hoje.getFullYear(), hoje.getMonth(), diaVencimento);
+  if(candidato < hoje){
+    candidato = new Date(hoje.getFullYear(), hoje.getMonth()+1, diaVencimento);
+  }
+  const diffDias = Math.round((candidato - hoje) / 86400000);
+  return {data: candidato, diffDias};
+}
+
+function inicioSemana(){
+  const hoje = new Date();
+  const diaSemana = hoje.getDay(); // 0=domingo
+  const offset = diaSemana === 0 ? 6 : diaSemana - 1; // segunda como início
+  const seg = new Date(hoje);
+  seg.setDate(hoje.getDate() - offset);
+  return seg.toISOString().slice(0,10);
+}
+
 function calcular(){
   const totalDepositos = state.depositos.reduce((s,d)=>s+d.valor,0);
   const totalDespesas = state.despesas.reduce((s,d)=>s+d.valor,0);
@@ -829,8 +908,28 @@ function calcular(){
   const necessidadeSemanal = necessidadeMensal / 4.33;
   const necessidadeDiaria = necessidadeSemanal / diasAbertos;
 
+  // meta batida: depositado hoje / na semana
+  const hoje = todayStr();
+  const segunda = inicioSemana();
+  const depositadoHoje = state.depositos.filter(d=>d.data===hoje).reduce((s,d)=>s+d.valor,0);
+  const depositadoSemana = state.depositos.filter(d=>d.data>=segunda).reduce((s,d)=>s+d.valor,0);
+
+  // fixas vencendo nos próximos 7 dias, com base no dia de vencimento cadastrado
+  const fixasVencendo = fixasAtivas
+    .map(f=>({...f, prox: proximoVencimento(f.diaVencimento)}))
+    .filter(f=>f.prox && f.prox.diffDias<=7)
+    .sort((a,b)=>a.prox.diffDias-b.prox.diffDias);
+  const totalFixasVencendo = fixasVencendo.reduce((s,f)=>s+f.valor,0);
+
   return {totalDepositos, totalDespesas, totalEmprestado, totalDevolvido, saldoAtual,
-          necessidadeMensal, necessidadeSemanal, necessidadeDiaria, fixasAtivas, diasAbertos};
+          necessidadeMensal, necessidadeSemanal, necessidadeDiaria, fixasAtivas, diasAbertos,
+          depositadoHoje, depositadoSemana, fixasVencendo, totalFixasVencendo};
+}
+
+function mesAno(dataStr, offsetMeses){
+  const [ano, mes] = dataStr.slice(0,7).split('-').map(Number);
+  const d = new Date(ano, mes-1+offsetMeses, 1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
 }
 
 // ============ RENDER ============
@@ -847,10 +946,45 @@ function renderAll(){
   document.getElementById('dash-dia').textContent = fmtMoney(c.necessidadeDiaria);
   document.getElementById('dash-semana').textContent = fmtMoney(c.necessidadeSemanal);
   document.getElementById('dash-semana-sub').textContent = `em ${c.diasAbertos} dias de operação`;
-  document.getElementById('dash-fixas-total').textContent = fmtMoney(c.necessidadeMensal);
-  document.getElementById('dash-fixas-count').textContent = `${c.fixasAtivas.length} conta(s) ativa(s)`;
+
+  const faltaDia = c.necessidadeDiaria - c.depositadoHoje;
+  const pillDia = document.getElementById('meta-dia-pill');
+  pillDia.textContent = fmtMoney(c.depositadoHoje);
+  pillDia.className = 'meta-pill ' + (faltaDia > 0 ? 'falta' : 'bateu');
+  pillDia.title = faltaDia > 0 ? `Falta ${fmtMoney(faltaDia)}` : `Meta batida (+${fmtMoney(-faltaDia)})`;
+
+  const faltaSemana = c.necessidadeSemanal - c.depositadoSemana;
+  const pillSemana = document.getElementById('meta-semana-pill');
+  pillSemana.textContent = fmtMoney(c.depositadoSemana);
+  pillSemana.className = 'meta-pill ' + (faltaSemana > 0 ? 'falta' : 'bateu');
+  pillSemana.title = faltaSemana > 0 ? `Falta ${fmtMoney(faltaSemana)}` : `Meta batida (+${fmtMoney(-faltaSemana)})`;
+
+  document.getElementById('dash-contas-vencer').textContent = fmtMoney(c.totalFixasVencendo);
+  document.getElementById('dash-contas-vencer-count').textContent = `${c.fixasVencendo.length} conta(s)`;
+  document.getElementById('card-contas-vencer').className = 'card ' + (c.fixasVencendo.length>0 ? 'warn' : '');
+
+  const painelVencendo = document.getElementById('panel-fixas-vencendo');
+  const listaVencendo = document.getElementById('fixas-vencendo-lista');
+  if(c.fixasVencendo.length>0){
+    painelVencendo.style.display = '';
+    listaVencendo.innerHTML = c.fixasVencendo.map(f=>{
+      const label = f.prox.diffDias===0 ? 'vence hoje' : f.prox.diffDias===1 ? 'vence amanhã' : `vence em ${f.prox.diffDias} dias`;
+      return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;">
+        <span>${f.nome} <span style="color:var(--text-muted)">· ${label}</span></span>
+        <span style="color:var(--gold)">${fmtMoney(f.valor)}</span>
+      </div>`;
+    }).join('');
+  }else{
+    painelVencendo.style.display = 'none';
+  }
+
+  const fixasResumo = document.getElementById('fixas-resumo');
+  if(fixasResumo){
+    fixasResumo.textContent = `${c.fixasAtivas.length} conta(s) ativa(s) · total mensal ${fmtMoney(c.necessidadeMensal)}`;
+  }
 
   renderMapaGastos();
+  renderComparativoMensal();
   renderDepositos();
   renderFixas();
   renderDespesas();
@@ -876,6 +1010,63 @@ function renderMapaGastos(){
     return `<div class="bar-row">
       <div class="bar-head"><span class="cat">${CATS[cat]||cat}</span><span class="val">${fmtMoney(val)} · ${pct.toFixed(0)}%</span></div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderComparativoMensal(){
+  const el = document.getElementById('comparativo-mensal');
+  if(state.despesas.length===0){
+    el.innerHTML = '<div class="empty">Sem despesas suficientes pra comparar ainda</div>';
+    return;
+  }
+  const hoje = todayStr();
+  const mesAtual = mesAno(hoje, 0);
+  const mesAnterior = mesAno(hoje, -1);
+
+  const porCatAtual = {};
+  const porCatAnterior = {};
+  state.despesas.forEach(d=>{
+    const m = mesAno(d.data, 0);
+    if(m===mesAtual) porCatAtual[d.categoria] = (porCatAtual[d.categoria]||0) + d.valor;
+    if(m===mesAnterior) porCatAnterior[d.categoria] = (porCatAnterior[d.categoria]||0) + d.valor;
+  });
+
+  const categorias = [...new Set([...Object.keys(porCatAtual), ...Object.keys(porCatAnterior)])];
+  if(categorias.length===0){
+    el.innerHTML = '<div class="empty">Sem despesas neste mês ou no anterior pra comparar</div>';
+    return;
+  }
+  const maiorValor = Math.max(1, ...categorias.map(c=>Math.max(porCatAtual[c]||0, porCatAnterior[c]||0)));
+
+  categorias.sort((a,b)=>(porCatAtual[b]||0)-(porCatAtual[a]||0));
+
+  el.innerHTML = categorias.map(cat=>{
+    const atual = porCatAtual[cat]||0;
+    const anterior = porCatAnterior[cat]||0;
+    let deltaHtml = '<span class="delta zero">sem dado anterior</span>';
+    if(anterior>0){
+      const pct = ((atual-anterior)/anterior*100);
+      const cls = pct>1 ? 'up' : (pct<-1 ? 'down' : 'zero');
+      const sinal = pct>0 ? '+' : '';
+      deltaHtml = `<span class="delta ${cls}">${sinal}${pct.toFixed(0)}%</span>`;
+    }else if(atual>0){
+      deltaHtml = '<span class="delta up">novo</span>';
+    }
+    return `<div class="compare-row">
+      <div class="compare-head"><span class="cat">${CATS[cat]||cat}</span>${deltaHtml}</div>
+      <div class="compare-bars">
+        <div class="compare-bar-line">
+          <span class="bar-label">este mês</span>
+          <div class="bar-track"><div class="bar-fill atual" style="width:${(atual/maiorValor*100)}%"></div></div>
+          <span class="bar-val">${fmtMoney(atual)}</span>
+        </div>
+        <div class="compare-bar-line">
+          <span class="bar-label">mês passado</span>
+          <div class="bar-track"><div class="bar-fill anterior" style="width:${(anterior/maiorValor*100)}%"></div></div>
+          <span class="bar-val">${fmtMoney(anterior)}</span>
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -927,18 +1118,25 @@ function renderDepositos(){
 function renderFixas(){
   const tbl = document.getElementById('tbl-fixas');
   document.getElementById('empty-fixas').classList.toggle('hidden', state.fixas.length>0);
-  tbl.innerHTML = state.fixas.map(f=>`
-    <tr>
+  tbl.innerHTML = state.fixas.map(f=>{
+    const prox = f.ativa ? proximoVencimento(f.diaVencimento) : null;
+    let vencTxt = f.diaVencimento ? `dia ${f.diaVencimento}` : '-';
+    if(prox){
+      const dd = prox.diffDias;
+      vencTxt += dd<=7 ? ` <span style="color:var(--gold);font-size:11px;">(${dd===0?'hoje':dd===1?'amanhã':'em '+dd+'d'})</span>` : '';
+    }
+    return `<tr>
       <td>${f.nome}</td>
       <td><span class="tag">${CATS[f.categoria]||f.categoria}</span></td>
-      <td>dia ${f.diaVencimento||'-'}</td>
+      <td>${vencTxt}</td>
       <td>${fmtMoney(f.valor)}</td>
       <td><span class="tag ${f.ativa?'entrada':'saida'}">${f.ativa?'ativa':'inativa'}</span></td>
       <td>
         <button class="icon-btn quit" onclick="toggleFixa('${f.id}', ${f.ativa})"><i class="fa-solid ${f.ativa?'fa-pause':'fa-play'}"></i> ${f.ativa?'desativar':'ativar'}</button>
         <button class="icon-btn" onclick="excluirFixa('${f.id}')"><i class="fa-solid fa-trash"></i></button>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 function renderDespesas(){
