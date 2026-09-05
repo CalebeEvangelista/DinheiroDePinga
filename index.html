@@ -306,6 +306,33 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .bar-track{height:7px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;}
 .bar-fill{height:100%;background:var(--gold);border-radius:99px;}
 
+/* seletor de mês (mapa de gastos) */
+.mes-seletor{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;}
+.mes-btn{
+  background:rgba(255,255,255,0.03);
+  color:var(--text-secondary);
+  border:1px solid var(--border);
+  padding:6px 13px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:600;
+}
+.mes-btn:hover{color:var(--text-primary);border-color:var(--text-muted);}
+.mes-btn.active{background:rgba(250,204,21,0.1);color:var(--gold);border-color:rgba(250,204,21,0.35);}
+
+/* balanço geral (depositado x saído) */
+.balanco-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.balanco-item{
+  background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px 16px;
+}
+.balanco-item .balanco-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;}
+.balanco-item .balanco-valor{font-family:'Inter',sans-serif;font-weight:700;font-size:21px;}
+.balanco-item.entrada .balanco-valor{color:var(--green-light);}
+.balanco-item.saida .balanco-valor{color:var(--red);}
+
 .toast{
   position:fixed;bottom:24px;right:24px;
   background:rgba(30,30,30,0.9);
@@ -323,6 +350,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 @media(max-width:640px){
   .form-row, .form-row.three{grid-template-columns:1fr;}
   header{flex-direction:column;align-items:flex-start;}
+  .balanco-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -439,6 +467,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 
       <div class="panel">
         <h3><i class="fa-solid fa-chart-simple"></i> Mapa de gastos</h3>
+        <div class="mes-seletor" id="mapa-mes-seletor"></div>
         <div id="mapa-gastos"></div>
       </div>
 
@@ -446,6 +475,26 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <h3><i class="fa-solid fa-arrow-right-arrow-left"></i> Comparativo mensal</h3>
         <div class="section-sub" style="margin-bottom:14px;">Gastos deste mês comparados ao mês anterior, por categoria</div>
         <div id="comparativo-mensal"></div>
+      </div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-scale-balanced"></i> Balanço geral</h3>
+        <div class="section-sub" style="margin-bottom:14px;">Quanto entrou e quanto saiu do caixa, no mês selecionado</div>
+        <div class="mes-seletor" id="balanco-mes-seletor"></div>
+        <div class="balanco-grid">
+          <div class="balanco-item entrada">
+            <div class="balanco-label">Total depositado</div>
+            <div class="balanco-valor" id="balanco-entrou">R$ 0,00</div>
+          </div>
+          <div class="balanco-item saida">
+            <div class="balanco-label">Total saído</div>
+            <div class="balanco-valor" id="balanco-saiu">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="meta-linha">
+          <span class="meta-label" id="balanco-legenda">Balanço</span>
+          <span class="meta-pill" id="balanco-pill">R$ 0,00</span>
+        </div>
       </div>
 
       <div class="grid" style="grid-template-columns:1fr 1fr;">
@@ -634,6 +683,8 @@ const CATS = {
 let state = { depositos:[], despesas:[], fixas:[], emprestimos:[], config:{diasAbertosPorSemana:6}, perfil:null };
 let currentUser = null;
 let modoCadastro = false;
+let mapaMesSelecionado = null; // "AAAA-MM" — definido na primeira renderização (mês atual)
+let balancoMesSelecionado = null; // "AAAA-MM" — mesma lógica do mapa de gastos
 
 function toast(msg){
   const t = document.getElementById('toast');
@@ -947,6 +998,35 @@ function mesAno(dataStr, offsetMeses){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
 }
 
+// meses (AAAA-MM) que têm despesa cadastrada, + o mês atual, mais recente primeiro
+function mesesComDespesas(){
+  const meses = new Set([mesAno(todayStr(), 0)]);
+  state.despesas.forEach(d=>{
+    if(d.data) meses.add(mesAno(d.data, 0));
+  });
+  return [...meses].sort((a,b)=> b.localeCompare(a)).slice(0,6);
+}
+
+// meses (AAAA-MM) que têm qualquer movimento (depósito, despesa, empréstimo ou devolução), + o mês atual
+function mesesComMovimento(){
+  const meses = new Set([mesAno(todayStr(), 0)]);
+  state.depositos.forEach(d=>{ if(d.data) meses.add(mesAno(d.data, 0)); });
+  state.despesas.forEach(d=>{ if(d.data) meses.add(mesAno(d.data, 0)); });
+  state.emprestimos.forEach(e=>{
+    if(e.data) meses.add(mesAno(e.data, 0));
+    (e.devolucoes||[]).forEach(dv=>{ if(dv.data) meses.add(mesAno(dv.data, 0)); });
+  });
+  return [...meses].sort((a,b)=> b.localeCompare(a)).slice(0,6);
+}
+
+function nomeMesCurto(mesAnoStr){
+  const [ano, mes] = mesAnoStr.split('-').map(Number);
+  const d = new Date(ano, mes-1, 1);
+  let nome = d.toLocaleDateString('pt-BR', {month:'short'}).replace('.','');
+  nome = nome.charAt(0).toUpperCase() + nome.slice(1);
+  return `${nome}/${ano}`;
+}
+
 // ============ RENDER ============
 function renderAll(){
   const c = calcular();
@@ -1000,6 +1080,7 @@ function renderAll(){
 
   renderMapaGastos();
   renderComparativoMensal();
+  renderBalanco();
   renderDepositos();
   renderFixas();
   renderDespesas();
@@ -1008,16 +1089,36 @@ function renderAll(){
 }
 
 function renderMapaGastos(){
+  const meses = mesesComDespesas();
+  if(!mapaMesSelecionado || !meses.includes(mapaMesSelecionado)){
+    mapaMesSelecionado = meses[0];
+  }
+
+  const seletorEl = document.getElementById('mapa-mes-seletor');
+  if(seletorEl){
+    seletorEl.innerHTML = meses.map(m=>
+      `<button type="button" class="mes-btn ${m===mapaMesSelecionado?'active':''}" data-mes="${m}">${nomeMesCurto(m)}</button>`
+    ).join('');
+    seletorEl.querySelectorAll('.mes-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        mapaMesSelecionado = btn.dataset.mes;
+        renderMapaGastos();
+      });
+    });
+  }
+
   const el = document.getElementById('mapa-gastos');
   const porCategoria = {};
-  state.despesas.forEach(d=>{
-    porCategoria[d.categoria] = (porCategoria[d.categoria]||0) + d.valor;
-  });
+  state.despesas
+    .filter(d => d.data && mesAno(d.data, 0) === mapaMesSelecionado)
+    .forEach(d=>{
+      porCategoria[d.categoria] = (porCategoria[d.categoria]||0) + d.valor;
+    });
   const total = Object.values(porCategoria).reduce((a,b)=>a+b,0);
   const entradas = Object.entries(porCategoria).sort((a,b)=>b[1]-a[1]);
 
   if(entradas.length === 0){
-    el.innerHTML = '<div class="empty">Nenhuma despesa registrada ainda pra montar o mapa</div>';
+    el.innerHTML = `<div class="empty">Nenhuma despesa registrada em ${nomeMesCurto(mapaMesSelecionado)}</div>`;
     return;
   }
   el.innerHTML = entradas.map(([cat,val])=>{
@@ -1027,6 +1128,54 @@ function renderMapaGastos(){
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
+}
+
+function renderBalanco(){
+  const meses = mesesComMovimento();
+  if(!balancoMesSelecionado || !meses.includes(balancoMesSelecionado)){
+    balancoMesSelecionado = meses[0];
+  }
+
+  const seletorEl = document.getElementById('balanco-mes-seletor');
+  if(seletorEl){
+    seletorEl.innerHTML = meses.map(m=>
+      `<button type="button" class="mes-btn ${m===balancoMesSelecionado?'active':''}" data-mes="${m}">${nomeMesCurto(m)}</button>`
+    ).join('');
+    seletorEl.querySelectorAll('.mes-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        balancoMesSelecionado = btn.dataset.mes;
+        renderBalanco();
+      });
+    });
+  }
+
+  // totais do mês selecionado, seguindo a mesma regra de calcular(): depósitos − despesas − emprestado + devolvido
+  const totalDepositos = state.depositos
+    .filter(d=>d.data && mesAno(d.data,0)===balancoMesSelecionado)
+    .reduce((s,d)=>s+d.valor,0);
+  const totalDespesas = state.despesas
+    .filter(d=>d.data && mesAno(d.data,0)===balancoMesSelecionado)
+    .reduce((s,d)=>s+d.valor,0);
+  let totalEmprestado = 0, totalDevolvido = 0;
+  state.emprestimos.forEach(e=>{
+    if(e.data && mesAno(e.data,0)===balancoMesSelecionado) totalEmprestado += e.valor;
+    (e.devolucoes||[]).forEach(dv=>{
+      if(dv.data && mesAno(dv.data,0)===balancoMesSelecionado) totalDevolvido += dv.valor;
+    });
+  });
+  const totalSaiu = totalDespesas + totalEmprestado - totalDevolvido;
+  const diff = totalDepositos - totalSaiu;
+
+  document.getElementById('balanco-entrou').textContent = fmtMoney(totalDepositos);
+  document.getElementById('balanco-saiu').textContent = fmtMoney(totalSaiu);
+
+  const pill = document.getElementById('balanco-pill');
+  const sinal = diff >= 0 ? '+ ' : '- ';
+  pill.textContent = sinal + fmtMoney(Math.abs(diff));
+  pill.className = 'meta-pill ' + (diff >= 0 ? 'bateu' : 'falta');
+
+  const legenda = document.getElementById('balanco-legenda');
+  legenda.textContent = diff >= 0 ? 'Entrou mais do que saiu' : 'Saiu mais do que entrou';
 }
 
 function renderComparativoMensal(){
