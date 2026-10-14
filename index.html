@@ -341,6 +341,30 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 .balanco-item.entrada .balanco-valor{color:var(--green-light);}
 .balanco-item.saida .balanco-valor{color:var(--red);}
 
+/* usuários e permissões */
+.perm-grid{margin:4px 0 2px;}
+.perm-grid th{text-align:center;}
+.perm-grid th:first-child{text-align:left;}
+.perm-grid td{padding:8px 10px;font-size:13px;}
+.perm-grid td:not(:first-child){text-align:center;width:80px;}
+.perm-grid input[type=checkbox]{
+  width:16px;height:16px;margin:0;padding:0;
+  accent-color:var(--gold);cursor:pointer;vertical-align:middle;
+}
+.perm-dica{font-size:11.5px;color:var(--text-muted);margin:6px 0 10px;}
+.membro-item{
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px 16px;
+  margin-bottom:12px;
+  background:rgba(255,255,255,0.02);
+}
+.membro-item:last-child{margin-bottom:0;}
+.membro-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+.membro-nome{font-weight:600;font-size:14px;}
+.membro-email{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.membro-acoes{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+
 .toast{
   position:fixed;bottom:24px;right:24px;
   background:rgba(30,30,30,0.9);
@@ -359,6 +383,8 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   .form-row, .form-row.three{grid-template-columns:1fr;}
   header{flex-direction:column;align-items:flex-start;}
   .balanco-grid{grid-template-columns:1fr;}
+  .perm-grid td:not(:first-child){width:auto;}
+  .perm-grid td, .perm-grid th{padding:8px 6px;}
 }
 </style>
 </head>
@@ -427,6 +453,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
     <button class="nav-btn" data-tab="fixas"><i class="fa-solid fa-file-invoice-dollar"></i> Despesas fixas</button>
     <button class="nav-btn" data-tab="despesas"><i class="fa-solid fa-receipt"></i> Despesas</button>
     <button class="nav-btn" data-tab="emprestimos"><i class="fa-solid fa-hand-holding-dollar"></i> Empréstimos</button>
+    <button class="nav-btn" data-tab="usuarios"><i class="fa-solid fa-users"></i> Usuários</button>
     <button class="nav-btn" data-tab="config"><i class="fa-solid fa-gear"></i> Configurações</button>
   </nav>
 
@@ -522,7 +549,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="section-title">Depósitos</div>
       <div class="section-sub">Lucro bruto que você transferiu do PDV pra cá</div>
 
-      <div class="panel">
+      <div class="panel" id="panel-novo-depositos">
         <h3><i class="fa-solid fa-plus"></i> Novo depósito</h3>
         <div class="form-row three">
           <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="dep-valor"></div>
@@ -532,7 +559,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <button class="btn-add" id="btn-add-deposito"><i class="fa-solid fa-plus"></i> Registrar depósito</button>
       </div>
 
-      <div class="panel">
+      <div class="panel" id="panel-hist-depositos">
         <h3><i class="fa-solid fa-list"></i> Histórico</h3>
         <table>
           <thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th></th></tr></thead>
@@ -547,7 +574,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="section-title">Despesas fixas</div>
       <div class="section-sub" id="fixas-resumo">Contas recorrentes que definem quanto você precisa faturar</div>
 
-      <div class="panel">
+      <div class="panel" id="panel-novo-fixas">
         <h3><i class="fa-solid fa-plus"></i> Nova despesa fixa</h3>
         <div class="form-row three">
           <div class="field"><label>Nome</label><input type="text" id="fixa-nome" placeholder="ex: aluguel"></div>
@@ -567,7 +594,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <button class="btn-add" id="btn-add-fixa"><i class="fa-solid fa-plus"></i> Cadastrar despesa fixa</button>
       </div>
 
-      <div class="panel">
+      <div class="panel" id="panel-hist-fixas">
         <h3><i class="fa-solid fa-list"></i> Contas cadastradas</h3>
         <table>
           <thead><tr><th>Nome</th><th>Categoria</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
@@ -582,7 +609,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="section-title">Despesas</div>
       <div class="section-sub">Gastos do dia a dia — gasolina, pessoal, funcionários e mais</div>
 
-      <div class="panel">
+      <div class="panel" id="panel-novo-despesas">
         <h3><i class="fa-solid fa-plus"></i> Nova despesa</h3>
         <div class="form-row three">
           <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="desp-valor"></div>
@@ -603,7 +630,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <button class="btn-add" id="btn-add-despesa"><i class="fa-solid fa-plus"></i> Registrar despesa</button>
       </div>
 
-      <div class="panel">
+      <div class="panel" id="panel-hist-despesas">
         <h3><i class="fa-solid fa-list"></i> Histórico</h3>
         <table>
           <thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th></th></tr></thead>
@@ -618,7 +645,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="section-title">Empréstimos</div>
       <div class="section-sub">Dinheiro tirado do lucro emprestado, até devolver</div>
 
-      <div class="panel">
+      <div class="panel" id="panel-novo-emprestimos">
         <h3><i class="fa-solid fa-plus"></i> Novo empréstimo</h3>
         <div class="form-row three">
           <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="emp-valor"></div>
@@ -628,13 +655,42 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <button class="btn-add" id="btn-add-emprestimo"><i class="fa-solid fa-plus"></i> Registrar empréstimo</button>
       </div>
 
-      <div class="panel">
+      <div class="panel" id="panel-hist-emprestimos">
         <h3><i class="fa-solid fa-list"></i> Todos os empréstimos</h3>
         <table>
           <thead><tr><th>Data</th><th>Motivo</th><th>Valor</th><th>Devolvido</th><th>Status</th><th></th></tr></thead>
           <tbody id="tbl-emprestimos"></tbody>
         </table>
         <div class="empty hidden" id="empty-emprestimos">Nenhum empréstimo registrado</div>
+      </div>
+    </section>
+
+    <!-- ===== USUARIOS (só ADM) ===== -->
+    <section id="tab-usuarios" class="tab-content hidden">
+      <div class="section-title">Usuários</div>
+      <div class="section-sub">Pessoas com acesso à sua loja e o que cada uma pode fazer</div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-user-plus"></i> Novo convite</h3>
+        <div class="form-row">
+          <div class="field"><label>Nome</label><input type="text" id="membro-nome" placeholder="ex: João do caixa" autocomplete="off"></div>
+          <div class="field"><label>E-mail</label><input type="email" id="membro-email" placeholder="joao@email.com" autocomplete="off"></div>
+        </div>
+        <label style="margin-top:4px;">Permissões</label>
+        <div id="membro-perms-novo"></div>
+        <button class="btn-add" id="btn-add-convite"><i class="fa-solid fa-paper-plane"></i> Criar convite</button>
+        <div class="perm-dica" style="margin-top:12px;margin-bottom:0;">Depois é só a pessoa abrir o sistema, clicar em <b>Criar conta</b> e usar este mesmo e-mail. Ela já entra direto na sua loja.</div>
+      </div>
+
+      <div class="panel">
+        <h3><i class="fa-solid fa-users"></i> Usuários da loja</h3>
+        <div id="lista-membros"></div>
+      </div>
+    </section>
+
+    <section id="sem-acesso" class="hidden">
+      <div class="panel">
+        <div class="empty">Você ainda não tem permissão pra nenhuma área da loja. Fale com o administrador.</div>
       </div>
     </section>
 
@@ -673,7 +729,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
   getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc,
-  query, orderBy, serverTimestamp, arrayUnion, setDoc, getDoc
+  query, orderBy, serverTimestamp, arrayUnion, setDoc, getDoc, where, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 // ============ CONFIGURAÇÃO DO FIREBASE ============
@@ -696,8 +752,33 @@ const CATS = {
   contas:"Contas", fornecedores:"Fornecedores", outros:"Outros", aluguel:"Aluguel"
 };
 
-let state = { depositos:[], despesas:[], fixas:[], emprestimos:[], config:{diasAbertosPorSemana:6}, perfil:null };
+let state = { depositos:[], despesas:[], fixas:[], emprestimos:[], membros:[], convites:[], config:{diasAbertosPorSemana:6}, perfil:null };
 let currentUser = null;
+
+// ============ USUÁRIOS DA LOJA / PERMISSÕES ============
+// lojaUid: dono dos dados (usuarios/{lojaUid}/...). Pro ADM é o próprio uid; pro membro, o uid do ADM.
+// permissoes: null = ADM (pode tudo); objeto = membro com as permissões dadas pelo ADM.
+let lojaUid = null;
+let permissoes = null;
+let unsubs = [];        // listeners das coleções (reiniciados quando as permissões mudam)
+let unsubMembro = null; // listener do vínculo do membro com a loja
+
+const SECOES_PERM = [
+  ['depositos','Depósitos'],
+  ['fixas','Despesas fixas'],
+  ['despesas','Despesas'],
+  ['emprestimos','Empréstimos'],
+];
+const ACOES_PERM = [['ver','Ver'],['lancar','Lançar'],['excluir','Excluir']];
+
+function souAdm(){ return permissoes === null; }
+function pode(secao, acao){
+  if(souAdm()) return true;
+  if(secao === 'dashboard') return permissoes.dashboard === true;
+  return !!(permissoes[secao] && permissoes[secao][acao] === true);
+}
+// o Dashboard precisa ler tudo pra calcular saldo e metas
+function podeLer(secao){ return pode(secao,'ver') || pode('dashboard'); }
 let modoCadastro = false;
 let mapaMesSelecionado = null; // "AAAA-MM" — definido na primeira renderização (mês atual)
 let balancoMesSelecionado = null; // "AAAA-MM" — mesma lógica do mapa de gastos
@@ -789,17 +870,44 @@ document.getElementById('btn-onboarding').addEventListener('click', async ()=>{
 onAuthStateChanged(auth, async (user)=>{
   if(user){
     currentUser = user;
+    lojaUid = user.uid;
+    permissoes = null;
     document.getElementById('login-screen').classList.add('hidden');
-    const perfilSnap = await getDoc(doc(db,'usuarios', user.uid));
-    if(perfilSnap.exists()){
-      state.perfil = perfilSnap.data();
+    const perfilRef = doc(db,'usuarios', user.uid);
+    const perfilSnap = await getDoc(perfilRef);
+    let perfil = perfilSnap.exists() ? perfilSnap.data() : null;
+
+    // conta nova ou de membro: verifica se tem convite pendente pra este e-mail
+    // (ADM com loja própria nunca é puxado pra outra loja)
+    if(!perfil || perfil.donoUid){
+      try{
+        if(await aceitarConvite(user)){
+          perfil = (await getDoc(perfilRef)).data();
+          toast('Bem-vindo(a), ' + perfil.nome + '!');
+        }
+      }catch(e){
+        bloquearAcesso('Não deu pra entrar na loja que te convidou. Avise o administrador.');
+        return;
+      }
+    }
+
+    if(!perfil){
+      document.getElementById('onboarding-screen').classList.remove('hidden');
+    }else if(perfil.donoUid){
+      entrarComoMembro(perfil);
+    }else{
+      state.perfil = perfil;
       state.config.diasAbertosPorSemana = state.perfil.diasAbertosPorSemana || 6;
       abrirApp();
-    }else{
-      document.getElementById('onboarding-screen').classList.remove('hidden');
     }
   }else{
     currentUser = null;
+    stopListeners();
+    if(unsubMembro){ unsubMembro(); unsubMembro = null; }
+    lojaUid = null;
+    permissoes = null;
+    state.depositos = []; state.despesas = []; state.fixas = []; state.emprestimos = [];
+    state.membros = []; state.convites = []; state.perfil = null;
     document.getElementById('app').classList.add('hidden');
     document.getElementById('onboarding-screen').classList.add('hidden');
     document.getElementById('login-screen').classList.remove('hidden');
@@ -812,7 +920,102 @@ function abrirApp(){
   document.getElementById('header-negocio-nome').textContent = state.perfil.nomeNegocio ? ('· ' + state.perfil.nomeNegocio) : '';
   document.getElementById('icon-toggle-valores').className = ocultarValores ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
   document.getElementById('btn-toggle-valores').title = ocultarValores ? 'Mostrar valores' : 'Ocultar valores';
+  aplicarPermissoes();
   startListeners();
+}
+
+// aceita o convite (convites/{email}) criando o vínculo na loja do ADM — tudo numa gravação só
+async function aceitarConvite(user){
+  const email = (user.email || '').toLowerCase();
+  if(!email) return false;
+  const conviteRef = doc(db,'convites', email);
+  let snap;
+  try{ snap = await getDoc(conviteRef); }catch(e){ return false; } // sem convite legível: segue normal
+  if(!snap.exists()) return false;
+  const c = snap.data();
+  const batch = writeBatch(db);
+  batch.set(doc(db,'usuarios',c.donoUid,'membros',user.uid), {
+    nome: c.nome, email, permissoes: c.permissoes, ativo: true, criadoEm: serverTimestamp()
+  });
+  batch.set(doc(db,'usuarios',user.uid), {nome: c.nome, donoUid: c.donoUid, criadoEm: serverTimestamp()});
+  batch.delete(conviteRef);
+  await batch.commit();
+  return true;
+}
+
+// membro: ouve o próprio vínculo pra aplicar na hora qualquer mudança de permissão ou bloqueio
+function entrarComoMembro(perfil){
+  const donoUid = perfil.donoUid;
+  let primeira = true;
+  unsubMembro = onSnapshot(doc(db,'usuarios',donoUid,'membros',currentUser.uid), async snap=>{
+    if(!snap.exists()){
+      bloquearAcesso('Seu acesso a esta loja foi removido pelo administrador');
+      return;
+    }
+    if(snap.data().ativo !== true){
+      bloquearAcesso('Seu acesso a esta loja foi bloqueado pelo administrador');
+      return;
+    }
+    permissoes = snap.data().permissoes || {};
+    if(primeira){
+      primeira = false;
+      lojaUid = donoUid;
+      let dono = {};
+      try{
+        const donoSnap = await getDoc(doc(db,'usuarios',donoUid));
+        if(donoSnap.exists()) dono = donoSnap.data();
+      }catch(e){}
+      state.perfil = {...perfil, nomeNegocio: dono.nomeNegocio || ''};
+      state.config.diasAbertosPorSemana = dono.diasAbertosPorSemana || 6;
+      abrirApp();
+    }else{
+      aplicarPermissoes();
+      startListeners();
+    }
+  }, ()=> bloquearAcesso('Não deu pra acessar a loja, fale com o administrador'));
+}
+
+function bloquearAcesso(msg){
+  signOut(auth).finally(()=>{
+    document.getElementById('login-error').textContent = msg;
+  });
+}
+
+// mostra/esconde abas, formulários e saldo de acordo com as permissões
+function aplicarPermissoes(){
+  const adm = souAdm();
+  const visivel = {
+    dashboard: pode('dashboard'),
+    depositos: pode('depositos','ver') || pode('depositos','lancar'),
+    fixas: pode('fixas','ver') || pode('fixas','lancar'),
+    despesas: pode('despesas','ver') || pode('despesas','lancar'),
+    emprestimos: pode('emprestimos','ver') || pode('emprestimos','lancar'),
+    usuarios: adm,
+    config: adm,
+  };
+  document.querySelectorAll('.nav-btn').forEach(btn=>{
+    btn.classList.toggle('hidden', !visivel[btn.dataset.tab]);
+  });
+  SECOES_PERM.forEach(([secao])=>{
+    document.getElementById('panel-novo-'+secao).classList.toggle('hidden', !pode(secao,'lancar'));
+    document.getElementById('panel-hist-'+secao).classList.toggle('hidden', !pode(secao,'ver'));
+  });
+  document.querySelector('.saldo-selo').classList.toggle('hidden', !pode('dashboard'));
+
+  // se a aba aberta ficou sem permissão, vai pra primeira liberada
+  const botoes = [...document.querySelectorAll('.nav-btn')];
+  const algumaVisivel = botoes.some(b=>!b.classList.contains('hidden'));
+  document.getElementById('sem-acesso').classList.toggle('hidden', algumaVisivel);
+  if(!algumaVisivel){
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden'));
+    return;
+  }
+  const ativa = document.querySelector('.nav-btn.active');
+  if(!ativa || ativa.classList.contains('hidden')){
+    botoes.find(b=>!b.classList.contains('hidden')).click();
+  }else{
+    document.getElementById('tab-'+ativa.dataset.tab).classList.remove('hidden');
+  }
 }
 
 // ============ NAV ============
@@ -826,28 +1029,47 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 });
 
 // ============ LISTENERS FIRESTORE ============
+function stopListeners(){
+  unsubs.forEach(u=>u());
+  unsubs = [];
+}
+
 function startListeners(){
-  const uid = currentUser.uid;
-  onSnapshot(query(collection(db,'usuarios',uid,'depositos'), orderBy('data','desc')), snap=>{
-    state.depositos = snap.docs.map(d=>({id:d.id, ...d.data()}));
-    renderAll();
-  });
-  onSnapshot(query(collection(db,'usuarios',uid,'despesas'), orderBy('data','desc')), snap=>{
-    state.despesas = snap.docs.map(d=>({id:d.id, ...d.data()}));
-    renderAll();
-  });
-  onSnapshot(collection(db,'usuarios',uid,'despesasFixas'), snap=>{
-    state.fixas = snap.docs.map(d=>({id:d.id, ...d.data()}));
-    renderAll();
-  });
-  onSnapshot(query(collection(db,'usuarios',uid,'emprestimos'), orderBy('data','desc')), snap=>{
-    state.emprestimos = snap.docs.map(d=>({id:d.id, ...d.data()}));
-    renderAll();
-  });
+  stopListeners();
+  const uid = lojaUid;
+  // só ouve as coleções que o usuário pode ler (ADM lê tudo)
+  const ouvir = (chave, ref)=>{
+    if(!podeLer(chave)){ state[chave] = []; return; }
+    unsubs.push(onSnapshot(ref, snap=>{
+      state[chave] = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      renderAll();
+    }, err=>console.warn('Sem acesso a '+chave, err.code)));
+  };
+  ouvir('depositos', query(collection(db,'usuarios',uid,'depositos'), orderBy('data','desc')));
+  ouvir('despesas', query(collection(db,'usuarios',uid,'despesas'), orderBy('data','desc')));
+  ouvir('fixas', collection(db,'usuarios',uid,'despesasFixas'));
+  ouvir('emprestimos', query(collection(db,'usuarios',uid,'emprestimos'), orderBy('data','desc')));
+
+  // só o ADM gerencia usuários e convites
+  state.membros = [];
+  state.convites = [];
+  if(souAdm()){
+    unsubs.push(onSnapshot(collection(db,'usuarios',uid,'membros'), snap=>{
+      state.membros = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      renderUsuarios();
+    }, err=>console.warn('Sem acesso a membros', err.code)));
+    unsubs.push(onSnapshot(query(collection(db,'convites'), where('donoUid','==',uid)), snap=>{
+      state.convites = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      renderUsuarios();
+    }, err=>console.warn('Sem acesso a convites', err.code)));
+  }
+
   document.getElementById('cfg-dias').value = state.config.diasAbertosPorSemana || 6;
   ['dep-data','desp-data','emp-data'].forEach(id=>{
     document.getElementById(id).value = todayStr();
   });
+  renderAll();
+  renderUsuarios();
 }
 
 // ============ DEPOSITOS ============
@@ -856,7 +1078,7 @@ document.getElementById('btn-add-deposito').addEventListener('click', async ()=>
   const data = document.getElementById('dep-data').value;
   const descricao = document.getElementById('dep-desc').value.trim();
   if(!valor || valor<=0 || !data){ toast('Preencha valor e data'); return; }
-  await addDoc(collection(db,'usuarios',currentUser.uid,'depositos'), {valor, data, descricao, criadoEm: serverTimestamp()});
+  await addDoc(collection(db,'usuarios',lojaUid,'depositos'), {valor, data, descricao, criadoEm: serverTimestamp()});
   document.getElementById('dep-valor').value='';
   document.getElementById('dep-desc').value='';
   toast('Depósito registrado');
@@ -864,7 +1086,7 @@ document.getElementById('btn-add-deposito').addEventListener('click', async ()=>
 
 async function excluirDeposito(id){
   if(!confirm('Excluir este depósito?')) return;
-  await deleteDoc(doc(db,'usuarios',currentUser.uid,'depositos', id));
+  await deleteDoc(doc(db,'usuarios',lojaUid,'depositos', id));
 }
 
 // ============ DESPESAS FIXAS ============
@@ -874,7 +1096,7 @@ document.getElementById('btn-add-fixa').addEventListener('click', async ()=>{
   const diaVencimento = parseInt(document.getElementById('fixa-dia').value) || null;
   const categoria = document.getElementById('fixa-categoria').value;
   if(!nome || !valor || valor<=0){ toast('Preencha nome e valor'); return; }
-  await addDoc(collection(db,'usuarios',currentUser.uid,'despesasFixas'), {nome, valor, diaVencimento, categoria, ativa:true});
+  await addDoc(collection(db,'usuarios',lojaUid,'despesasFixas'), {nome, valor, diaVencimento, categoria, ativa:true});
   document.getElementById('fixa-nome').value='';
   document.getElementById('fixa-valor').value='';
   document.getElementById('fixa-dia').value='';
@@ -882,11 +1104,11 @@ document.getElementById('btn-add-fixa').addEventListener('click', async ()=>{
 });
 
 async function toggleFixa(id, ativa){
-  await updateDoc(doc(db,'usuarios',currentUser.uid,'despesasFixas', id), {ativa: !ativa});
+  await updateDoc(doc(db,'usuarios',lojaUid,'despesasFixas', id), {ativa: !ativa});
 }
 async function excluirFixa(id){
   if(!confirm('Excluir esta despesa fixa?')) return;
-  await deleteDoc(doc(db,'usuarios',currentUser.uid,'despesasFixas', id));
+  await deleteDoc(doc(db,'usuarios',lojaUid,'despesasFixas', id));
 }
 
 // ============ DESPESAS VARIAVEIS ============
@@ -896,7 +1118,7 @@ document.getElementById('btn-add-despesa').addEventListener('click', async ()=>{
   const categoria = document.getElementById('desp-categoria').value;
   const descricao = document.getElementById('desp-desc').value.trim();
   if(!valor || valor<=0 || !data){ toast('Preencha valor e data'); return; }
-  await addDoc(collection(db,'usuarios',currentUser.uid,'despesas'), {valor, data, categoria, descricao, criadoEm: serverTimestamp()});
+  await addDoc(collection(db,'usuarios',lojaUid,'despesas'), {valor, data, categoria, descricao, criadoEm: serverTimestamp()});
   document.getElementById('desp-valor').value='';
   document.getElementById('desp-desc').value='';
   toast('Despesa registrada');
@@ -904,7 +1126,7 @@ document.getElementById('btn-add-despesa').addEventListener('click', async ()=>{
 
 async function excluirDespesa(id){
   if(!confirm('Excluir esta despesa?')) return;
-  await deleteDoc(doc(db,'usuarios',currentUser.uid,'despesas', id));
+  await deleteDoc(doc(db,'usuarios',lojaUid,'despesas', id));
 }
 
 // ============ EMPRESTIMOS ============
@@ -913,7 +1135,7 @@ document.getElementById('btn-add-emprestimo').addEventListener('click', async ()
   const data = document.getElementById('emp-data').value;
   const motivo = document.getElementById('emp-motivo').value.trim();
   if(!valor || valor<=0 || !data){ toast('Preencha valor e data'); return; }
-  await addDoc(collection(db,'usuarios',currentUser.uid,'emprestimos'), {valor, data, motivo, status:'aberto', devolucoes:[]});
+  await addDoc(collection(db,'usuarios',lojaUid,'emprestimos'), {valor, data, motivo, status:'aberto', devolucoes:[]});
   document.getElementById('emp-valor').value='';
   document.getElementById('emp-motivo').value='';
   toast('Empréstimo registrado');
@@ -927,7 +1149,7 @@ async function registrarDevolucao(id, valorTotal, jaDevolvido){
   if(!valor || valor<=0) return;
   const novoTotal = jaDevolvido + valor;
   const status = novoTotal >= valorTotal ? 'quitado' : 'aberto';
-  await updateDoc(doc(db,'usuarios',currentUser.uid,'emprestimos', id), {
+  await updateDoc(doc(db,'usuarios',lojaUid,'emprestimos', id), {
     devolucoes: arrayUnion({valor, data: todayStr()}),
     status
   });
@@ -935,7 +1157,7 @@ async function registrarDevolucao(id, valorTotal, jaDevolvido){
 }
 async function excluirEmprestimo(id){
   if(!confirm('Excluir este empréstimo?')) return;
-  await deleteDoc(doc(db,'usuarios',currentUser.uid,'emprestimos', id));
+  await deleteDoc(doc(db,'usuarios',lojaUid,'emprestimos', id));
 }
 
 // ============ CONFIG ============
@@ -947,6 +1169,139 @@ document.getElementById('btn-save-config').addEventListener('click', async ()=>{
   renderAll();
 });
 
+// ============ USUÁRIOS (só ADM) ============
+function permGridHtml(p){
+  p = p || {};
+  const linhas = SECOES_PERM.map(([s,l])=>`<tr><td>${l}</td>${ACOES_PERM.map(([a])=>
+    `<td><input type="checkbox" data-secao="${s}" data-acao="${a}" ${p[s] && p[s][a] ? 'checked' : ''}></td>`
+  ).join('')}</tr>`).join('');
+  return `<table class="perm-grid">
+    <thead><tr><th></th>${ACOES_PERM.map(([,l])=>`<th>${l}</th>`).join('')}</tr></thead>
+    <tbody>
+      ${linhas}
+      <tr><td>Dashboard e saldo</td><td><input type="checkbox" data-secao="dashboard" data-acao="ver" ${p.dashboard ? 'checked' : ''}></td><td></td><td></td></tr>
+    </tbody>
+  </table>
+  <div class="perm-dica">Lançar inclui ativar/desativar fixas e registrar devolução. Dashboard e saldo mostram os totais da loja inteira.</div>`;
+}
+
+function lerPermGrid(el){
+  const p = {dashboard:false};
+  SECOES_PERM.forEach(([s])=>{ p[s] = {ver:false, lancar:false, excluir:false}; });
+  el.querySelectorAll('.perm-grid input[type=checkbox]').forEach(cb=>{
+    if(cb.dataset.secao === 'dashboard') p.dashboard = cb.checked;
+    else p[cb.dataset.secao][cb.dataset.acao] = cb.checked;
+  });
+  return p;
+}
+
+// excluir exige ver (precisa enxergar a lista pra excluir)
+function ajustarPermGrid(cb){
+  const linha = cb.closest('tr');
+  if(!linha) return;
+  const ver = linha.querySelector('[data-acao="ver"]');
+  const excluir = linha.querySelector('[data-acao="excluir"]');
+  if(cb.dataset.acao === 'excluir' && cb.checked && ver) ver.checked = true;
+  if(cb.dataset.acao === 'ver' && !cb.checked && excluir) excluir.checked = false;
+}
+
+function temAlgumaPermissao(p){
+  return p.dashboard || SECOES_PERM.some(([s])=> ACOES_PERM.some(([a])=> p[s][a]));
+}
+
+const permsNovoEl = document.getElementById('membro-perms-novo');
+permsNovoEl.innerHTML = permGridHtml(null);
+permsNovoEl.addEventListener('change', e=>{
+  if(e.target.matches('input[type=checkbox]')) ajustarPermGrid(e.target);
+});
+
+document.getElementById('btn-add-convite').addEventListener('click', async ()=>{
+  if(!souAdm()) return;
+  const nome = document.getElementById('membro-nome').value.trim();
+  const email = document.getElementById('membro-email').value.trim().toLowerCase();
+  const permissoesNovo = lerPermGrid(permsNovoEl);
+  if(!nome || !email){ toast('Preencha nome e e-mail'); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast('E-mail inválido'); return; }
+  if(email === (currentUser.email || '').toLowerCase()){ toast('Esse é o seu próprio e-mail'); return; }
+  if(state.membros.some(m=>m.email === email)){ toast('Esse e-mail já é usuário da loja'); return; }
+  if(!temAlgumaPermissao(permissoesNovo)){ toast('Marque pelo menos uma permissão'); return; }
+  try{
+    await setDoc(doc(db,'convites', email), {
+      email, nome, donoUid: currentUser.uid, permissoes: permissoesNovo, criadoEm: serverTimestamp()
+    });
+  }catch(e){
+    toast('Não deu pra criar o convite. Esse e-mail pode ter convite de outra loja');
+    return;
+  }
+  document.getElementById('membro-nome').value = '';
+  document.getElementById('membro-email').value = '';
+  permsNovoEl.innerHTML = permGridHtml(null);
+  toast('Convite criado para ' + email);
+});
+
+function renderUsuarios(){
+  const el = document.getElementById('lista-membros');
+  if(!el) return;
+  const itens = [
+    ...state.membros.map(m=>({tipo:'membro', ...m})),
+    ...state.convites.map(c=>({tipo:'convite', ...c})),
+  ];
+  if(itens.length === 0){
+    el.innerHTML = '<div class="empty">Nenhum usuário adicionado ainda</div>';
+    return;
+  }
+  el.innerHTML = itens.map(it=>{
+    let status, acoes;
+    if(it.tipo === 'convite'){
+      status = '<span class="tag pendente">convite pendente</span>';
+      acoes = `<button class="icon-btn" onclick="cancelarConvite('${it.id}')"><i class="fa-solid fa-xmark"></i> cancelar</button>`;
+    }else{
+      status = `<span class="tag ${it.ativo ? 'entrada' : 'saida'}">${it.ativo ? 'ativo' : 'bloqueado'}</span>`;
+      acoes = `<button class="icon-btn quit" onclick="toggleMembro('${it.id}', ${!!it.ativo})"><i class="fa-solid ${it.ativo ? 'fa-lock' : 'fa-lock-open'}"></i> ${it.ativo ? 'bloquear' : 'desbloquear'}</button>
+        <button class="icon-btn" onclick="excluirMembro('${it.id}')"><i class="fa-solid fa-trash"></i></button>`;
+    }
+    return `<div class="membro-item" data-tipo="${it.tipo}" data-id="${it.id}">
+      <div class="membro-head">
+        <div><div class="membro-nome">${it.nome || '-'}</div><div class="membro-email">${it.email || ''}</div></div>
+        <div class="membro-acoes">${status}${acoes}</div>
+      </div>
+      ${permGridHtml(it.permissoes)}
+    </div>`;
+  }).join('');
+}
+
+// editar permissões de membro ou convite: salva na hora
+document.getElementById('lista-membros').addEventListener('change', async e=>{
+  if(!e.target.matches('input[type=checkbox]') || !souAdm()) return;
+  const item = e.target.closest('.membro-item');
+  if(!item) return;
+  ajustarPermGrid(e.target);
+  const ref = item.dataset.tipo === 'convite'
+    ? doc(db,'convites', item.dataset.id)
+    : doc(db,'usuarios',currentUser.uid,'membros', item.dataset.id);
+  try{
+    await updateDoc(ref, {permissoes: lerPermGrid(item)});
+    toast('Permissões salvas');
+  }catch(err){
+    toast('Não deu pra salvar as permissões');
+  }
+});
+
+async function toggleMembro(id, ativo){
+  await updateDoc(doc(db,'usuarios',currentUser.uid,'membros', id), {ativo: !ativo});
+  toast(ativo ? 'Usuário bloqueado' : 'Usuário desbloqueado');
+}
+async function excluirMembro(id){
+  if(!confirm('Remover este usuário da loja? Pra só pausar o acesso, use "bloquear".')) return;
+  await deleteDoc(doc(db,'usuarios',currentUser.uid,'membros', id));
+  toast('Usuário removido');
+}
+async function cancelarConvite(id){
+  if(!confirm('Cancelar este convite?')) return;
+  await deleteDoc(doc(db,'convites', id));
+  toast('Convite cancelado');
+}
+
 // expõe funções pros botões inline
 window.excluirDeposito = excluirDeposito;
 window.toggleFixa = toggleFixa;
@@ -954,6 +1309,9 @@ window.excluirFixa = excluirFixa;
 window.excluirDespesa = excluirDespesa;
 window.registrarDevolucao = registrarDevolucao;
 window.excluirEmprestimo = excluirEmprestimo;
+window.toggleMembro = toggleMembro;
+window.excluirMembro = excluirMembro;
+window.cancelarConvite = cancelarConvite;
 
 // ============ CÁLCULOS ============
 function proximoVencimento(diaVencimento){
@@ -1091,7 +1449,9 @@ function renderAll(){
 
   const fixasResumo = document.getElementById('fixas-resumo');
   if(fixasResumo){
-    fixasResumo.textContent = `${c.fixasAtivas.length} conta(s) ativa(s) · total mensal ${fmtMoney(c.necessidadeMensal)}`;
+    fixasResumo.textContent = podeLer('fixas')
+      ? `${c.fixasAtivas.length} conta(s) ativa(s) · total mensal ${fmtMoney(c.necessidadeMensal)}`
+      : 'Contas recorrentes que definem quanto você precisa faturar';
   }
 
   renderMapaGastos();
@@ -1291,7 +1651,7 @@ function renderDepositos(){
       <td>${fmtDate(d.data)}</td>
       <td>${d.descricao||'-'}</td>
       <td style="color:var(--green-light)">${fmtMoney(d.valor)}</td>
-      <td><button class="icon-btn" onclick="excluirDeposito('${d.id}')"><i class="fa-solid fa-trash"></i></button></td>
+      <td>${pode('depositos','excluir') ? `<button class="icon-btn" onclick="excluirDeposito('${d.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}</td>
     </tr>`).join('');
 }
 
@@ -1312,8 +1672,8 @@ function renderFixas(){
       <td>${fmtMoney(f.valor)}</td>
       <td><span class="tag ${f.ativa?'entrada':'saida'}">${f.ativa?'ativa':'inativa'}</span></td>
       <td>
-        <button class="icon-btn quit" onclick="toggleFixa('${f.id}', ${f.ativa})"><i class="fa-solid ${f.ativa?'fa-pause':'fa-play'}"></i> ${f.ativa?'desativar':'ativar'}</button>
-        <button class="icon-btn" onclick="excluirFixa('${f.id}')"><i class="fa-solid fa-trash"></i></button>
+        ${pode('fixas','lancar') ? `<button class="icon-btn quit" onclick="toggleFixa('${f.id}', ${f.ativa})"><i class="fa-solid ${f.ativa?'fa-pause':'fa-play'}"></i> ${f.ativa?'desativar':'ativar'}</button>` : ''}
+        ${pode('fixas','excluir') ? `<button class="icon-btn" onclick="excluirFixa('${f.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}
       </td>
     </tr>`;
   }).join('');
@@ -1328,7 +1688,7 @@ function renderDespesas(){
       <td><span class="tag">${CATS[d.categoria]||d.categoria}</span></td>
       <td>${d.descricao||'-'}</td>
       <td style="color:var(--red)">${fmtMoney(d.valor)}</td>
-      <td><button class="icon-btn" onclick="excluirDespesa('${d.id}')"><i class="fa-solid fa-trash"></i></button></td>
+      <td>${pode('despesas','excluir') ? `<button class="icon-btn" onclick="excluirDespesa('${d.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}</td>
     </tr>`).join('');
 }
 
@@ -1344,8 +1704,8 @@ function renderEmprestimos(){
       <td>${fmtMoney(dev)}</td>
       <td><span class="tag ${e.status}">${e.status}</span></td>
       <td>
-        ${e.status==='aberto' ? `<button class="icon-btn quit" onclick="registrarDevolucao('${e.id}', ${e.valor}, ${dev})"><i class="fa-solid fa-rotate-left"></i> devolver</button>` : ''}
-        <button class="icon-btn" onclick="excluirEmprestimo('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+        ${e.status==='aberto' && pode('emprestimos','lancar') ? `<button class="icon-btn quit" onclick="registrarDevolucao('${e.id}', ${e.valor}, ${dev})"><i class="fa-solid fa-rotate-left"></i> devolver</button>` : ''}
+        ${pode('emprestimos','excluir') ? `<button class="icon-btn" onclick="excluirEmprestimo('${e.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}
       </td>
     </tr>`;
   }).join('');
