@@ -1,0 +1,55 @@
+rules_version = '2';
+// Regras do Dinheiro de Pinga. Publique em: Firebase Console > Firestore > Regras.
+// ADM = dono (usuarios/{lojaUid}). Membro = usuarios/{lojaUid}/membros/{uid} com permissoes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function logado() { return request.auth != null; }
+    function ehDono(loja) { return logado() && request.auth.uid == loja; }
+    function membro(loja) {
+      return get(/databases/$(database)/documents/usuarios/$(loja)/membros/$(request.auth.uid)).data;
+    }
+    function ehMembroAtivo(loja) {
+      return logado() && exists(/databases/$(database)/documents/usuarios/$(loja)/membros/$(request.auth.uid))
+        && membro(loja).ativo == true;
+    }
+    function pode(loja, secao, acao) {
+      return ehDono(loja) || (ehMembroAtivo(loja) && membro(loja).permissoes[secao][acao] == true);
+    }
+    function podeLer(loja, secao) {
+      return pode(loja, secao, 'ver') || ehDono(loja)
+        || (ehMembroAtivo(loja) && membro(loja).permissoes.dashboard == true);
+    }
+
+    match /usuarios/{loja} {
+      allow read: if ehDono(loja) || ehMembroAtivo(loja) || (logado() && resource.data.donoUid != null && request.auth.uid == loja);
+      allow create, update: if logado() && request.auth.uid == loja;
+      allow delete: if false;
+
+      match /membros/{uid} {
+        allow read: if ehDono(loja) || (logado() && request.auth.uid == uid);
+        // o próprio convidado cria seu vínculo ao aceitar o convite (batch em aceitarConvite)
+        allow create: if ehDono(loja) || (logado() && request.auth.uid == uid);
+        allow update, delete: if ehDono(loja);
+      }
+
+      // coleções financeiras: depositos, despesas, despesasFixas, emprestimos
+      match /{secaoCol}/{docId} {
+        function secao() {
+          return secaoCol == 'despesasFixas' ? 'fixas' : secaoCol;
+        }
+        allow read: if secaoCol in ['depositos','despesas','despesasFixas','emprestimos'] && podeLer(loja, secao());
+        allow create, update: if secaoCol in ['depositos','despesas','despesasFixas','emprestimos'] && pode(loja, secao(), 'lancar');
+        allow delete: if secaoCol in ['depositos','despesas','despesasFixas','emprestimos'] && pode(loja, secao(), 'excluir');
+      }
+    }
+
+    match /convites/{id} {
+      allow read: if logado() && (resource.data.donoUid == request.auth.uid
+        || resource.data.email == request.auth.token.email.lower());
+      allow create, update: if logado() && request.resource.data.donoUid == request.auth.uid;
+      allow delete: if logado() && (resource.data.donoUid == request.auth.uid
+        || resource.data.email == request.auth.token.email.lower());
+    }
+  }
+}

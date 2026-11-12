@@ -386,6 +386,24 @@ tr:hover td{background:rgba(255,255,255,0.02);}
   .perm-grid td:not(:first-child){width:auto;}
   .perm-grid td, .perm-grid th{padding:8px 6px;}
 }
+
+/* ===== lançamento rápido ===== */
+.fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;
+  background:var(--gold);color:#161616;font-size:24px;border:none;box-shadow:0 6px 20px rgba(0,0,0,.45);z-index:50;cursor:pointer;}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;display:flex;align-items:flex-end;justify-content:center;}
+.sheet{background:#1e1e1e;border:1px solid var(--border);border-radius:18px 18px 0 0;width:100%;max-width:520px;
+  padding:18px 16px calc(18px + env(safe-area-inset-bottom));animation:sheetUp .18s ease-out;}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet-tipos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.sheet-tipos button{padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-secondary);font-weight:600;font-size:15px;}
+.sheet-tipos button.on.saida{background:rgba(239,68,68,.15);border-color:var(--red);color:var(--red);}
+.sheet-tipos button.on.entrada{background:rgba(34,197,94,.15);border-color:var(--green);color:var(--green-light);}
+.sheet-valor{width:100%;font-size:34px;font-weight:700;text-align:center;padding:12px;background:transparent;border:none;
+  border-bottom:2px solid var(--gold);color:var(--text-primary);margin-bottom:14px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.chip{padding:9px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-secondary);font-size:14px;}
+.chip.on{border-color:var(--gold);color:var(--gold);background:rgba(250,204,21,.1);}
+.sheet .btn-add{width:100%;justify-content:center;padding:15px;font-size:16px;margin-top:10px;}
 </style>
 </head>
 <body>
@@ -488,6 +506,11 @@ tr:hover td{background:rgba(255,255,255,0.02);}
             <span class="meta-pill" id="meta-semana-pill">R$ 0,00</span>
           </div>
         </div>
+        <div class="card" id="card-meta-mes">
+          <div class="label">Meta do mês</div>
+          <div class="big" id="dash-falta-mes">R$ 0,00</div>
+          <div class="sub" id="dash-falta-mes-sub">falta depositar pra cobrir as fixas</div>
+        </div>
         <div class="card" id="card-contas-vencer">
           <div class="label">Fixas vencendo (7 dias)</div>
           <div class="big" id="dash-contas-vencer">R$ 0,00</div>
@@ -530,6 +553,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
           <span class="meta-label" id="balanco-legenda">Balanço</span>
           <span class="meta-pill" id="balanco-pill">R$ 0,00</span>
         </div>
+        <button class="btn-add" id="btn-exportar-csv" style="margin-top:14px;"><i class="fa-solid fa-file-csv"></i> Exportar mês (CSV)</button>
       </div>
 
       <div class="grid" style="grid-template-columns:1fr 1fr;">
@@ -552,7 +576,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="panel" id="panel-novo-depositos">
         <h3><i class="fa-solid fa-plus"></i> Novo depósito</h3>
         <div class="form-row three">
-          <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="dep-valor"></div>
+          <div class="field"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="dep-valor"></div>
           <div class="field"><label>Data</label><input type="date" id="dep-data"></div>
           <div class="field"><label>Descrição</label><input type="text" id="dep-desc" placeholder="ex: lucro do dia 14/07"></div>
         </div>
@@ -578,7 +602,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
         <h3><i class="fa-solid fa-plus"></i> Nova despesa fixa</h3>
         <div class="form-row three">
           <div class="field"><label>Nome</label><input type="text" id="fixa-nome" placeholder="ex: aluguel"></div>
-          <div class="field"><label>Valor mensal (R$)</label><input type="number" step="0.01" id="fixa-valor"></div>
+          <div class="field"><label>Valor mensal (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="fixa-valor"></div>
           <div class="field"><label>Dia de vencimento</label><input type="number" min="1" max="31" id="fixa-dia"></div>
         </div>
         <div class="field">
@@ -612,7 +636,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="panel" id="panel-novo-despesas">
         <h3><i class="fa-solid fa-plus"></i> Nova despesa</h3>
         <div class="form-row three">
-          <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="desp-valor"></div>
+          <div class="field"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="desp-valor"></div>
           <div class="field"><label>Data</label><input type="date" id="desp-data"></div>
           <div class="field">
             <label>Categoria</label>
@@ -648,7 +672,7 @@ tr:hover td{background:rgba(255,255,255,0.02);}
       <div class="panel" id="panel-novo-emprestimos">
         <h3><i class="fa-solid fa-plus"></i> Novo empréstimo</h3>
         <div class="form-row three">
-          <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="emp-valor"></div>
+          <div class="field"><label>Valor (R$)</label><input type="text" inputmode="decimal" placeholder="0,00" id="emp-valor"></div>
           <div class="field"><label>Data</label><input type="date" id="emp-data"></div>
           <div class="field"><label>Motivo</label><input type="text" id="emp-motivo" placeholder="ex: comprar peça da moto"></div>
         </div>
@@ -713,6 +737,21 @@ tr:hover td{background:rgba(255,255,255,0.02);}
 </div>
 
 <div id="toast" class="toast hidden"></div>
+
+<button class="fab hidden" id="fab-lancar" aria-label="Lançamento rápido"><i class="fa-solid fa-plus"></i></button>
+<div class="sheet-bg hidden" id="sheet-lancar">
+  <div class="sheet" role="dialog" aria-label="Lançamento rápido">
+    <div class="sheet-tipos">
+      <button type="button" data-tipo="despesa" class="saida"><i class="fa-solid fa-arrow-down"></i> Despesa</button>
+      <button type="button" data-tipo="deposito" class="entrada"><i class="fa-solid fa-arrow-up"></i> Depósito</button>
+    </div>
+    <input class="sheet-valor" id="rap-valor" type="text" inputmode="decimal" placeholder="R$ 0,00" autocomplete="off">
+    <div class="chips" id="rap-cats"></div>
+    <input type="text" id="rap-desc" list="rap-sugestoes" placeholder="Descrição (opcional)" autocomplete="off">
+    <datalist id="rap-sugestoes"></datalist>
+    <button class="btn-add" id="rap-salvar"><i class="fa-solid fa-check"></i> Salvar · hoje</button>
+  </div>
+</div>
 
 <script>
 if ('serviceWorker' in navigator) {
@@ -800,9 +839,22 @@ function fmtDate(d){
   const dt = new Date(d + 'T00:00:00');
   return dt.toLocaleDateString('pt-BR');
 }
-function todayStr(){
-  return new Date().toISOString().slice(0,10);
+function dataLocalStr(dt){
+  const p = n=>String(n).padStart(2,'0');
+  return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}`;
 }
+function todayStr(){ return dataLocalStr(new Date()); }
+// aceita "12,50", "1.234,56", "12.5"
+function parseValor(str){
+  str = String(str||'').trim().replace(/\s|R\$/g,'');
+  if(str.includes(',')) str = str.replace(/\./g,'').replace(',','.');
+  const v = parseFloat(str);
+  return isFinite(v) ? Math.round(v*100)/100 : NaN;
+}
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function autor(){ return (currentUser && (currentUser.email||currentUser.uid)) || null; }
 
 // ============ AUTH ============
 function traduzErro(code){
@@ -1001,6 +1053,7 @@ function aplicarPermissoes(){
     document.getElementById('panel-hist-'+secao).classList.toggle('hidden', !pode(secao,'ver'));
   });
   document.querySelector('.saldo-selo').classList.toggle('hidden', !pode('dashboard'));
+  document.getElementById('fab-lancar').classList.toggle('hidden', !(pode('despesas','lancar') || pode('depositos','lancar')));
 
   // se a aba aberta ficou sem permissão, vai pra primeira liberada
   const botoes = [...document.querySelectorAll('.nav-btn')];
@@ -1074,11 +1127,11 @@ function startListeners(){
 
 // ============ DEPOSITOS ============
 document.getElementById('btn-add-deposito').addEventListener('click', async ()=>{
-  const valor = parseFloat(document.getElementById('dep-valor').value);
+  const valor = parseValor(document.getElementById('dep-valor').value);
   const data = document.getElementById('dep-data').value;
   const descricao = document.getElementById('dep-desc').value.trim();
   if(!valor || valor<=0 || !data){ toast('Preencha valor e data'); return; }
-  await addDoc(collection(db,'usuarios',lojaUid,'depositos'), {valor, data, descricao, criadoEm: serverTimestamp()});
+  await addDoc(collection(db,'usuarios',lojaUid,'depositos'), {valor, data, descricao, criadoEm: serverTimestamp(), criadoPor: autor()});
   document.getElementById('dep-valor').value='';
   document.getElementById('dep-desc').value='';
   toast('Depósito registrado');
@@ -1092,11 +1145,11 @@ async function excluirDeposito(id){
 // ============ DESPESAS FIXAS ============
 document.getElementById('btn-add-fixa').addEventListener('click', async ()=>{
   const nome = document.getElementById('fixa-nome').value.trim();
-  const valor = parseFloat(document.getElementById('fixa-valor').value);
+  const valor = parseValor(document.getElementById('fixa-valor').value);
   const diaVencimento = parseInt(document.getElementById('fixa-dia').value) || null;
   const categoria = document.getElementById('fixa-categoria').value;
   if(!nome || !valor || valor<=0){ toast('Preencha nome e valor'); return; }
-  await addDoc(collection(db,'usuarios',lojaUid,'despesasFixas'), {nome, valor, diaVencimento, categoria, ativa:true});
+  await addDoc(collection(db,'usuarios',lojaUid,'despesasFixas'), {nome, valor, diaVencimento, categoria, ativa:true, criadoPor: autor()});
   document.getElementById('fixa-nome').value='';
   document.getElementById('fixa-valor').value='';
   document.getElementById('fixa-dia').value='';
@@ -1113,12 +1166,12 @@ async function excluirFixa(id){
 
 // ============ DESPESAS VARIAVEIS ============
 document.getElementById('btn-add-despesa').addEventListener('click', async ()=>{
-  const valor = parseFloat(document.getElementById('desp-valor').value);
+  const valor = parseValor(document.getElementById('desp-valor').value);
   const data = document.getElementById('desp-data').value;
   const categoria = document.getElementById('desp-categoria').value;
   const descricao = document.getElementById('desp-desc').value.trim();
   if(!valor || valor<=0 || !data){ toast('Preencha valor e data'); return; }
-  await addDoc(collection(db,'usuarios',lojaUid,'despesas'), {valor, data, categoria, descricao, criadoEm: serverTimestamp()});
+  await addDoc(collection(db,'usuarios',lojaUid,'despesas'), {valor, data, categoria, descricao, criadoEm: serverTimestamp(), criadoPor: autor()});
   document.getElementById('desp-valor').value='';
   document.getElementById('desp-desc').value='';
   toast('Despesa registrada');
@@ -1131,11 +1184,11 @@ async function excluirDespesa(id){
 
 // ============ EMPRESTIMOS ============
 document.getElementById('btn-add-emprestimo').addEventListener('click', async ()=>{
-  const valor = parseFloat(document.getElementById('emp-valor').value);
+  const valor = parseValor(document.getElementById('emp-valor').value);
   const data = document.getElementById('emp-data').value;
   const motivo = document.getElementById('emp-motivo').value.trim();
   if(!valor || valor<=0 || !data){ toast('Preencha valor e data'); return; }
-  await addDoc(collection(db,'usuarios',lojaUid,'emprestimos'), {valor, data, motivo, status:'aberto', devolucoes:[]});
+  await addDoc(collection(db,'usuarios',lojaUid,'emprestimos'), {valor, data, motivo, status:'aberto', devolucoes:[], criadoEm: serverTimestamp(), criadoPor: autor()});
   document.getElementById('emp-valor').value='';
   document.getElementById('emp-motivo').value='';
   toast('Empréstimo registrado');
@@ -1145,12 +1198,12 @@ async function registrarDevolucao(id, valorTotal, jaDevolvido){
   const restante = valorTotal - jaDevolvido;
   const valorStr = prompt('Valor devolvido agora (restante: '+fmtMoney(restante)+')', restante.toFixed(2));
   if(!valorStr) return;
-  const valor = parseFloat(valorStr.replace(',','.'));
+  const valor = parseValor(valorStr);
   if(!valor || valor<=0) return;
   const novoTotal = jaDevolvido + valor;
   const status = novoTotal >= valorTotal ? 'quitado' : 'aberto';
   await updateDoc(doc(db,'usuarios',lojaUid,'emprestimos', id), {
-    devolucoes: arrayUnion({valor, data: todayStr()}),
+    devolucoes: arrayUnion({valor, data: todayStr(), por: autor()}),
     status
   });
   toast(status==='quitado' ? 'Empréstimo quitado!' : 'Devolução registrada');
@@ -1159,6 +1212,107 @@ async function excluirEmprestimo(id){
   if(!confirm('Excluir este empréstimo?')) return;
   await deleteDoc(doc(db,'usuarios',lojaUid,'emprestimos', id));
 }
+
+// ============ LANÇAMENTO RÁPIDO ============
+const rap = {tipo:'despesa', cat:'outros'};
+const CATS_DESP = ['gasolina','pessoal','funcionarios','contas','fornecedores','outros'];
+function rapRender(){
+  document.querySelectorAll('.sheet-tipos button').forEach(b=>{
+    const permitido = b.dataset.tipo==='despesa' ? pode('despesas','lancar') : pode('depositos','lancar');
+    b.classList.toggle('hidden', !permitido);
+    b.classList.toggle('on', b.dataset.tipo===rap.tipo);
+  });
+  const catsEl = document.getElementById('rap-cats');
+  catsEl.classList.toggle('hidden', rap.tipo!=='despesa');
+  catsEl.innerHTML = CATS_DESP.map(c=>`<button type="button" class="chip ${c===rap.cat?'on':''}" data-cat="${c}">${CATS[c]}</button>`).join('');
+  // sugestões: descrições recentes do tipo escolhido
+  const fonte = rap.tipo==='despesa' ? state.despesas.filter(d=>!d.fixaId) : state.depositos;
+  const recentes = [...new Set(fonte.map(d=>d.descricao).filter(Boolean))].slice(0,15);
+  document.getElementById('rap-sugestoes').innerHTML = recentes.map(t=>`<option value="${esc(t)}">`).join('');
+}
+function abrirRapido(){
+  if(!pode(rap.tipo==='despesa'?'despesas':'depositos','lancar')) rap.tipo = pode('despesas','lancar') ? 'despesa' : 'deposito';
+  document.getElementById('rap-valor').value='';
+  document.getElementById('rap-desc').value='';
+  rapRender();
+  document.getElementById('sheet-lancar').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('rap-valor').focus(), 50);
+}
+function fecharRapido(){ document.getElementById('sheet-lancar').classList.add('hidden'); }
+document.getElementById('fab-lancar').addEventListener('click', abrirRapido);
+document.getElementById('sheet-lancar').addEventListener('click', e=>{
+  if(e.target.id==='sheet-lancar') return fecharRapido();
+  const t = e.target.closest('[data-tipo]'); if(t){ rap.tipo = t.dataset.tipo; rapRender(); return; }
+  const c = e.target.closest('[data-cat]'); if(c){ rap.cat = c.dataset.cat; rapRender(); }
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') fecharRapido(); });
+document.getElementById('rap-desc').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('rap-salvar').click(); });
+document.getElementById('rap-valor').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('rap-salvar').click(); });
+document.getElementById('rap-salvar').addEventListener('click', async ()=>{
+  const valor = parseValor(document.getElementById('rap-valor').value);
+  if(!valor || valor<=0){ toast('Digite o valor'); return; }
+  const descricao = document.getElementById('rap-desc').value.trim();
+  const base = {valor, data: todayStr(), descricao, criadoEm: serverTimestamp(), criadoPor: autor()};
+  const btn = document.getElementById('rap-salvar'); btn.disabled = true;
+  try{
+    if(rap.tipo==='despesa'){
+      await addDoc(collection(db,'usuarios',lojaUid,'despesas'), {...base, categoria: rap.cat});
+      toast(`Despesa de ${fmtMoney(valor)} lançada`);
+    }else{
+      await addDoc(collection(db,'usuarios',lojaUid,'depositos'), base);
+      toast(`Depósito de ${fmtMoney(valor)} lançado`);
+    }
+    fecharRapido();
+  }catch(err){ toast('Não deu pra salvar. Tente de novo.'); }
+  finally{ btn.disabled = false; }
+});
+
+// ============ EXPORTAR CSV ============
+document.getElementById('btn-exportar-csv').addEventListener('click', ()=>{
+  const mes = balancoMesSelecionado;
+  if(!mes){ toast('Sem lançamentos pra exportar'); return; }
+  const doMes = d=> d && d.slice(0,7)===mes;
+  const linhas = [];
+  state.depositos.filter(d=>doMes(d.data)).forEach(d=>linhas.push([d.data,'Depósito','',d.descricao||'',d.valor,d.criadoPor||'']));
+  state.despesas.filter(d=>doMes(d.data)).forEach(d=>linhas.push([d.data,'Despesa',CATS[d.categoria]||d.categoria,d.descricao||'',-d.valor,d.criadoPor||'']));
+  state.emprestimos.forEach(e=>{
+    if(doMes(e.data)) linhas.push([e.data,'Empréstimo','',e.motivo||'',-e.valor,e.criadoPor||'']);
+    (e.devolucoes||[]).filter(dv=>doMes(dv.data)).forEach(dv=>linhas.push([dv.data,'Devolução','',e.motivo||'',dv.valor,dv.por||'']));
+  });
+  linhas.sort((a,b)=>a[0].localeCompare(b[0]));
+  const cel = v=> typeof v==='number' ? v.toFixed(2).replace('.',',') : '"'+String(v).replace(/"/g,'""')+'"';
+  const csv = '\ufeff' + [['Data','Tipo','Categoria','Descrição','Valor','Lançado por'], ...linhas].map(l=>l.map(cel).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `dinheiro-de-pinga-${mes}.csv`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+});
+
+// ============ EDITAR LANÇAMENTOS ============
+async function editarLancamento(colecao, id){
+  const mapa = {depositos:['depositos','descricao','Descrição'], despesas:['despesas','descricao','Descrição'], emprestimos:['emprestimos','motivo','Motivo']};
+  const [chave, campoTxt, rotulo] = mapa[colecao];
+  const item = state[chave].find(x=>x.id===id); if(!item) return;
+  const vStr = prompt('Valor (R$)', item.valor.toFixed(2).replace('.',','));
+  if(vStr===null) return;
+  const valor = parseValor(vStr);
+  if(!valor || valor<=0){ toast('Valor inválido'); return; }
+  const data = prompt('Data (AAAA-MM-DD)', item.data||todayStr());
+  if(data===null) return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)){ toast('Data inválida'); return; }
+  const txt = prompt(rotulo, item[campoTxt]||'');
+  if(txt===null) return;
+  const upd = {valor, data, [campoTxt]: txt.trim(), editadoEm: serverTimestamp(), editadoPor: autor()};
+  if(colecao==='emprestimos'){
+    const dev = (item.devolucoes||[]).reduce((a,d)=>a+d.valor,0);
+    upd.status = dev >= valor ? 'quitado' : 'aberto';
+  }
+  await updateDoc(doc(db,'usuarios',lojaUid,colecao,id), upd);
+  toast('Lançamento atualizado');
+}
+window.editarLancamento = editarLancamento;
+window.pagarFixa = pagarFixa;
 
 // ============ CONFIG ============
 document.getElementById('btn-save-config').addEventListener('click', async ()=>{
@@ -1262,7 +1416,7 @@ function renderUsuarios(){
     }
     return `<div class="membro-item" data-tipo="${it.tipo}" data-id="${it.id}">
       <div class="membro-head">
-        <div><div class="membro-nome">${it.nome || '-'}</div><div class="membro-email">${it.email || ''}</div></div>
+        <div><div class="membro-nome">${esc(it.nome || '-')}</div><div class="membro-email">${esc(it.email || '')}</div></div>
         <div class="membro-acoes">${status}${acoes}</div>
       </div>
       ${permGridHtml(it.permissoes)}
@@ -1318,12 +1472,32 @@ function proximoVencimento(diaVencimento){
   if(!diaVencimento) return null;
   const hoje = new Date();
   hoje.setHours(0,0,0,0);
-  let candidato = new Date(hoje.getFullYear(), hoje.getMonth(), diaVencimento);
+  // dia 31 em mês de 30 dias (ou fevereiro) vence no último dia do mês
+  const venc = (ano, mes)=> new Date(ano, mes, Math.min(diaVencimento, new Date(ano, mes+1, 0).getDate()));
+  let candidato = venc(hoje.getFullYear(), hoje.getMonth());
   if(candidato < hoje){
-    candidato = new Date(hoje.getFullYear(), hoje.getMonth()+1, diaVencimento);
+    candidato = venc(hoje.getFullYear(), hoje.getMonth()+1);
   }
   const diffDias = Math.round((candidato - hoje) / 86400000);
   return {data: candidato, diffDias};
+}
+
+function fixaPagaNoMes(fixaId, mes){
+  return state.despesas.some(d=>d.fixaId===fixaId && d.mesRef===mes);
+}
+async function pagarFixa(id){
+  const f = state.fixas.find(x=>x.id===id); if(!f) return;
+  const mes = todayStr().slice(0,7);
+  if(fixaPagaNoMes(id, mes)){ toast('Essa conta já foi paga este mês'); return; }
+  const vStr = prompt(`Valor pago de "${f.nome}"`, f.valor.toFixed(2).replace('.',','));
+  if(vStr===null) return;
+  const valor = parseValor(vStr);
+  if(!valor || valor<=0){ toast('Valor inválido'); return; }
+  await addDoc(collection(db,'usuarios',lojaUid,'despesas'), {
+    valor, data: todayStr(), categoria: f.categoria||'outros', descricao: 'Conta fixa: '+f.nome,
+    fixaId: id, mesRef: mes, criadoEm: serverTimestamp(), criadoPor: autor()
+  });
+  toast('Conta marcada como paga e lançada nas despesas');
 }
 
 function inicioSemana(){
@@ -1332,7 +1506,7 @@ function inicioSemana(){
   const offset = diaSemana === 0 ? 6 : diaSemana - 1; // segunda como início
   const seg = new Date(hoje);
   seg.setDate(hoje.getDate() - offset);
-  return seg.toISOString().slice(0,10);
+  return dataLocalStr(seg);
 }
 
 function calcular(){
@@ -1355,13 +1529,17 @@ function calcular(){
   const depositadoSemana = state.depositos.filter(d=>d.data>=segunda).reduce((s,d)=>s+d.valor,0);
 
   // fixas vencendo nos próximos 7 dias, com base no dia de vencimento cadastrado
+  const mesAtualStr = hoje.slice(0,7);
   const fixasVencendo = fixasAtivas
+    .filter(f=>!fixaPagaNoMes(f.id, mesAtualStr))
     .map(f=>({...f, prox: proximoVencimento(f.diaVencimento)}))
     .filter(f=>f.prox && f.prox.diffDias<=7)
     .sort((a,b)=>a.prox.diffDias-b.prox.diffDias);
   const totalFixasVencendo = fixasVencendo.reduce((s,f)=>s+f.valor,0);
 
-  return {totalDepositos, totalDespesas, totalEmprestado, totalDevolvido, saldoAtual,
+  const depositadoMes = state.depositos.filter(d=>d.data && d.data.slice(0,7)===mesAtualStr).reduce((s,d)=>s+d.valor,0);
+  const faltaMes = necessidadeMensal - depositadoMes;
+  return {depositadoMes, faltaMes, totalDepositos, totalDespesas, totalEmprestado, totalDevolvido, saldoAtual,
           necessidadeMensal, necessidadeSemanal, necessidadeDiaria, fixasAtivas, diasAbertos,
           depositadoHoje, depositadoSemana, fixasVencendo, totalFixasVencendo};
 }
@@ -1428,6 +1606,17 @@ function renderAll(){
   pillSemana.className = 'meta-pill ' + (faltaSemana > 0 ? 'falta' : 'bateu');
   pillSemana.title = faltaSemana > 0 ? `Falta ${fmtMoney(faltaSemana)}` : `Meta batida (+${fmtMoney(-faltaSemana)})`;
 
+  const faltaMesEl = document.getElementById('dash-falta-mes');
+  if(c.faltaMes > 0){
+    faltaMesEl.textContent = fmtMoney(c.faltaMes);
+    document.getElementById('dash-falta-mes-sub').textContent = `faltam pra cobrir ${fmtMoney(c.necessidadeMensal)} de fixas · depositado ${fmtMoney(c.depositadoMes)}`;
+    document.getElementById('card-meta-mes').className = 'card warn';
+  }else{
+    faltaMesEl.textContent = fmtMoney(-c.faltaMes);
+    document.getElementById('dash-falta-mes-sub').textContent = 'acima das fixas do mês — meta batida';
+    document.getElementById('card-meta-mes').className = 'card ok';
+  }
+
   document.getElementById('dash-contas-vencer').textContent = fmtMoney(c.totalFixasVencendo);
   document.getElementById('dash-contas-vencer-count').textContent = `${c.fixasVencendo.length} conta(s)`;
   document.getElementById('card-contas-vencer').className = 'card ' + (c.fixasVencendo.length>0 ? 'warn' : '');
@@ -1439,7 +1628,7 @@ function renderAll(){
     listaVencendo.innerHTML = c.fixasVencendo.map(f=>{
       const label = f.prox.diffDias===0 ? 'vence hoje' : f.prox.diffDias===1 ? 'vence amanhã' : `vence em ${f.prox.diffDias} dias`;
       return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;">
-        <span>${f.nome} <span style="color:var(--text-muted)">· ${label}</span></span>
+        <span>${esc(f.nome)} <span style="color:var(--text-muted)">· ${label}</span></span>
         <span style="color:var(--gold)">${fmtMoney(f.valor)}</span>
       </div>`;
     }).join('');
@@ -1620,7 +1809,7 @@ function renderDashExtras(){
     abertosEl.innerHTML = abertos.map(e=>{
       const dev = (e.devolucoes||[]).reduce((a,d)=>a+d.valor,0);
       return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;">
-        <span>${e.motivo||'sem motivo'}</span>
+        <span>${esc(e.motivo||'sem motivo')}</span>
         <span style="color:var(--gold-light)">${fmtMoney(e.valor-dev)} restante</span>
       </div>`;
     }).join('');
@@ -1649,9 +1838,9 @@ function renderDepositos(){
   tbl.innerHTML = state.depositos.map(d=>`
     <tr>
       <td>${fmtDate(d.data)}</td>
-      <td>${d.descricao||'-'}</td>
+      <td title="${esc(d.criadoPor?'Lançado por '+d.criadoPor:'')}">${esc(d.descricao||'-')}</td>
       <td style="color:var(--green-light)">${fmtMoney(d.valor)}</td>
-      <td>${pode('depositos','excluir') ? `<button class="icon-btn" onclick="excluirDeposito('${d.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}</td>
+      <td>${pode('depositos','lancar') ? `<button class="icon-btn quit" title="Editar" onclick="editarLancamento('depositos','${d.id}')"><i class="fa-solid fa-pen"></i></button>` : ''}${pode('depositos','excluir') ? `<button class="icon-btn" onclick="excluirDeposito('${d.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}</td>
     </tr>`).join('');
 }
 
@@ -1666,12 +1855,13 @@ function renderFixas(){
       vencTxt += dd<=7 ? ` <span style="color:var(--gold);font-size:11px;">(${dd===0?'hoje':dd===1?'amanhã':'em '+dd+'d'})</span>` : '';
     }
     return `<tr>
-      <td>${f.nome}</td>
+      <td>${esc(f.nome)}</td>
       <td><span class="tag">${CATS[f.categoria]||f.categoria}</span></td>
       <td>${vencTxt}</td>
       <td>${fmtMoney(f.valor)}</td>
-      <td><span class="tag ${f.ativa?'entrada':'saida'}">${f.ativa?'ativa':'inativa'}</span></td>
+      <td><span class="tag ${f.ativa?'entrada':'saida'}">${f.ativa?'ativa':'inativa'}</span>${f.ativa && fixaPagaNoMes(f.id, todayStr().slice(0,7)) ? ' <span class="tag pago">paga no mês</span>' : ''}</td>
       <td>
+        ${f.ativa && pode('despesas','lancar') && !fixaPagaNoMes(f.id, todayStr().slice(0,7)) ? `<button class="icon-btn quit" onclick="pagarFixa('${f.id}')"><i class="fa-solid fa-check"></i> pagar</button>` : ''}
         ${pode('fixas','lancar') ? `<button class="icon-btn quit" onclick="toggleFixa('${f.id}', ${f.ativa})"><i class="fa-solid ${f.ativa?'fa-pause':'fa-play'}"></i> ${f.ativa?'desativar':'ativar'}</button>` : ''}
         ${pode('fixas','excluir') ? `<button class="icon-btn" onclick="excluirFixa('${f.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}
       </td>
@@ -1686,9 +1876,9 @@ function renderDespesas(){
     <tr>
       <td>${fmtDate(d.data)}</td>
       <td><span class="tag">${CATS[d.categoria]||d.categoria}</span></td>
-      <td>${d.descricao||'-'}</td>
+      <td title="${esc(d.criadoPor?'Lançado por '+d.criadoPor:'')}">${esc(d.descricao||'-')}</td>
       <td style="color:var(--red)">${fmtMoney(d.valor)}</td>
-      <td>${pode('despesas','excluir') ? `<button class="icon-btn" onclick="excluirDespesa('${d.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}</td>
+      <td>${pode('despesas','lancar') ? `<button class="icon-btn quit" title="Editar" onclick="editarLancamento('despesas','${d.id}')"><i class="fa-solid fa-pen"></i></button>` : ''}${pode('despesas','excluir') ? `<button class="icon-btn" onclick="excluirDespesa('${d.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}</td>
     </tr>`).join('');
 }
 
@@ -1699,12 +1889,13 @@ function renderEmprestimos(){
     const dev = (e.devolucoes||[]).reduce((a,d)=>a+d.valor,0);
     return `<tr>
       <td>${fmtDate(e.data)}</td>
-      <td>${e.motivo||'-'}</td>
+      <td title="${esc(e.criadoPor?'Lançado por '+e.criadoPor:'')}">${esc(e.motivo||'-')}</td>
       <td>${fmtMoney(e.valor)}</td>
       <td>${fmtMoney(dev)}</td>
       <td><span class="tag ${e.status}">${e.status}</span></td>
       <td>
         ${e.status==='aberto' && pode('emprestimos','lancar') ? `<button class="icon-btn quit" onclick="registrarDevolucao('${e.id}', ${e.valor}, ${dev})"><i class="fa-solid fa-rotate-left"></i> devolver</button>` : ''}
+        ${pode('emprestimos','lancar') ? `<button class="icon-btn quit" title="Editar" onclick="editarLancamento('emprestimos','${e.id}')"><i class="fa-solid fa-pen"></i></button>` : ''}
         ${pode('emprestimos','excluir') ? `<button class="icon-btn" onclick="excluirEmprestimo('${e.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}
       </td>
     </tr>`;
