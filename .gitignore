@@ -1,0 +1,5 @@
+.DS_Store
+# cópias antigas (mantidas no disco, fora do git)
+DinheiroDePinga/
+dinheiro-de-pinga-pwa/
+*.zip
